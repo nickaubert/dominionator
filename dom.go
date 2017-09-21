@@ -14,6 +14,8 @@ func main() {
 
 	pg := players.InitializePlaygroup(2)
 
+    sqp := players.InitializeSequence(pg)
+
 	for _, p := range pg.Players {
 		fmt.Println(p.Name)
 		p.Deck = cards.ShuffleDeck(p.Deck)
