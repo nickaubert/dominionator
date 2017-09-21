@@ -116,3 +116,13 @@ func DefMarket() cards.Card {
 	c.Effects.ExtraCoins = 1
 	return c
 }
+
+func DefWoodcutter() cards.Card {
+	var c cards.Card
+	c.Name = "Woodcutter"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.ExtraBuy = 1
+	c.Effects.ExtraCoins = 2
+	return c
+}
