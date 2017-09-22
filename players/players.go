@@ -8,13 +8,17 @@ import cards "github.com/nickaubert/dominionator/cards"
 import basic "github.com/nickaubert/dominionator/basic"
 
 type Player struct {
-	Deck cards.Deck
-	Name string
+	Deck        cards.Deck
+	Hand        cards.Hand
+	DiscardPile cards.DiscardPile
+	Name        string
 }
 
 type Playgroup struct {
-	Players     []Player
-    PlayerTurn  int
+	Players    []Player
+	PlayerTurn int
+	Supply     cards.Supply
+	Trash      cards.Trash
 }
 
 func InitializePlaygroup(s int) Playgroup {
@@ -23,10 +27,10 @@ func InitializePlaygroup(s int) Playgroup {
 		var pl Player
 		pl.Deck = InitialDeck()
 		pl.Name = fmt.Sprintf("Player%2d", i)
-		// shuffle here?
 		pg.Players = append(pg.Players, pl)
 	}
-    pg.PlayerTurn = 0
+	pg.PlayerTurn = 0
+	pg.Supply = InitializeSupply(pg)
 	return pg
 }
 
@@ -45,40 +49,40 @@ func InitialDeck() cards.Deck {
 	return d
 }
 
-func InitializeSupply( pg Playgroup ) cards.Supply {
+func InitializeSupply(pg Playgroup) cards.Supply {
 
-    var s cards.Supply
-    var sp cards.SupplyPile
+	var s cards.Supply
+	var sp cards.SupplyPile
 
-    sp.Card = basic.DefCopper()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefCopper()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefSilver()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefSilver()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefGold()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefGold()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefEstate()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefEstate()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefDuchy()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefDuchy()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefProvince()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefProvince()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    sp.Card = basic.DefCurse()
-    sp.Count = 10
-    s.Piles = append( s.Piles, sp )
+	sp.Card = basic.DefCurse()
+	sp.Count = 10
+	s.Piles = append(s.Piles, sp)
 
-    return s
+	return s
 }
 
 /*
@@ -92,14 +96,33 @@ func InitializeSupplyPile( c cards.Card, n int ) cards.SupplyPile {
 }
 */
 
-func PlayTurn ( pg Playgroup ) Playgroup {
-    fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
+func PlayTurn(pg Playgroup) Playgroup {
 
-    pg.PlayerTurn++ // advance play to next turn
-    if pg.PlayerTurn >= len(pg.Players) {
-        pg.PlayerTurn = 0
-    }
+	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
 
-    return pg
+	pg = ActionPhase(pg)
+	pg = BuyPhase(pg)
+	pg = CleanupPhase(pg)
+
+	pg.PlayerTurn++ // advance play to next turn
+	if pg.PlayerTurn >= len(pg.Players) {
+		pg.PlayerTurn = 0
+	}
+
+	return pg
 }
 
+func ActionPhase(pg Playgroup) Playgroup {
+	fmt.Printf("\t%s's turn ActionPhase\n", pg.Players[pg.PlayerTurn].Name)
+	return pg
+}
+
+func BuyPhase(pg Playgroup) Playgroup {
+	fmt.Printf("\t%s's turn BuyPhase\n", pg.Players[pg.PlayerTurn].Name)
+	return pg
+}
+
+func CleanupPhase(pg Playgroup) Playgroup {
+	fmt.Printf("\t%s's turn CleanupPhase\n", pg.Players[pg.PlayerTurn].Name)
+	return pg
+}

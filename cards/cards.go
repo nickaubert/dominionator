@@ -19,6 +19,11 @@ type Effect struct {
 	ExtraAction int
 	ExtraBuy    int
 	ExtraCoins  int
+	/* http://wiki.dominionstrategy.com/index.php/Gameplay
+	   Discard (from hand or from deck) to DiscardPile
+	   Gain (to hand or to deck) from Supply
+	   Trash (from hand or from deck) to Trash
+	*/
 }
 
 type Card struct {
@@ -42,19 +47,25 @@ type DiscardPile struct {
 	Cards []Card
 }
 
+type Trash struct {
+	Cards []Card
+}
+
+/*
 type WholeDeck struct {
 	Deck        Deck
 	Hand        Hand
 	DiscardPile DiscardPile
 }
+*/
 
 type SupplyPile struct {
-    Card    Card
-    Count   int
+	Card  Card
+	Count int
 }
 
 type Supply struct {
-    Piles   []SupplyPile
+	Piles []SupplyPile
 }
 
 func ShuffleDeck(d Deck) Deck {
