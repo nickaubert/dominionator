@@ -34,7 +34,7 @@ func InitializePlaygroup(s int) Playgroup {
 	for i := 0; i < s; i++ {
 		var pl Player
 		pl.Deck = InitialDeck()
-		pl.Name = fmt.Sprintf("Player%2d", i)
+		pl.Name = fmt.Sprintf("Player%d", i)
 		pg.Players = append(pg.Players, pl)
 	}
 	pg.PlayerTurn = 0
@@ -128,24 +128,44 @@ func ActionPhase(pg *Playgroup) {
 }
 
 func BuyPhase(pg *Playgroup) {
+
 	p := pg.Players[pg.PlayerTurn]
 	fmt.Printf("\t%s's turn BuyPhase\n", p.Name)
+
 	var tc []cards.Card
 	tc, p.Hand.Cards = getTreasureCards(p.Hand)
+
 	// decision whether to put each card into play will go here
 	decide := true
+
 	for _, c := range tc {
 		if decide == true {
 			fmt.Println("\t\tplay", c.Name)
+			p.InPlay.Cards = append(p.InPlay.Cards, c)
 		} else {
 			p.Hand.Cards = append(p.Hand.Cards, c)
 		}
 	}
+
+	for _, c := range tc {
+		pg.ThisTurn.Coins += c.Coins
+	}
+
+	fmt.Println(p.Name, "has", pg.ThisTurn.Coins, "coins to spend")
+
 	pg.Players[pg.PlayerTurn] = p
 }
 
 func CleanupPhase(pg *Playgroup) {
 	fmt.Printf("\t%s's turn CleanupPhase\n", pg.Players[pg.PlayerTurn].Name)
+	pg.ThisTurn.Actions = 0
+	pg.ThisTurn.Buys = 0
+	pg.ThisTurn.Coins = 0
+	p := pg.Players[pg.PlayerTurn]
+	p.DiscardPile.Cards = append(p.DiscardPile.Cards, p.InPlay.Cards...)
+	p.InPlay.Cards = p.InPlay.Cards[:0]
+	Draw(&p, 5)
+	pg.Players[pg.PlayerTurn] = p
 }
 
 func Draw(p *Player, d int) {
@@ -195,8 +215,3 @@ func getTreasureCardsIndexes(hand cards.Hand) []int {
     return i
 }
 */
-
-func playCard(p *Player, n int) {
-	p.InPlay.Cards = append(p.InPlay.Cards, p.Hand.Cards[n])
-	p.Hand.Cards = append(p.Hand.Cards[:n], p.Hand.Cards[n+1:]...)
-}
