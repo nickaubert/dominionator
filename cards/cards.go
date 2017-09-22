@@ -72,7 +72,7 @@ type Supply struct {
 	Piles []SupplyPile
 }
 
-func ShuffleDeck(d Deck) Deck {
+func ShuffleDeck(d *Deck) {
 	rand.Seed(time.Now().UTC().UnixNano())
 	time.Sleep(time.Duration(rand.Int31n(10)) * time.Nanosecond) // more randomness?
 	var n Deck
@@ -81,5 +81,5 @@ func ShuffleDeck(d Deck) Deck {
 		n.Cards = append(n.Cards, d.Cards[r])
 		d.Cards = append(d.Cards[:r], d.Cards[r+1:]...)
 	}
-	return n
+	d.Cards = n.Cards
 }

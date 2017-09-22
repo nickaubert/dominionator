@@ -14,10 +14,9 @@ func main() {
 	fmt.Println()
 
 	pg := players.InitializePlaygroup(3)
-	for i, p := range pg.Players {
-		p.Deck = cards.ShuffleDeck(p.Deck)
-		p = players.Draw(p, 5)
-		pg.Players[i] = p
+	for n := range pg.Players {
+		cards.ShuffleDeck(&pg.Players[n].Deck)
+		players.Draw(&pg.Players[n], 5)
 	}
 
 	for _, p := range pg.Supply.Piles {
@@ -28,7 +27,7 @@ func main() {
 	stopit := 0 // break for testing
 	for {
 
-		pg = players.PlayTurn(pg)
+		players.PlayTurn(&pg)
 
 		stopit++
 		if stopit > 10 {

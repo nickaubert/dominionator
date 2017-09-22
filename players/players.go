@@ -10,6 +10,7 @@ import basic "github.com/nickaubert/dominionator/basic"
 type Player struct {
 	Deck        cards.Deck
 	Hand        cards.Hand
+	InPlay      cards.InPlay
 	DiscardPile cards.DiscardPile
 	Name        string
 }
@@ -26,7 +27,6 @@ type ThisTurn struct {
 	Actions int
 	Coins   int
 	Buys    int
-	InPlay  cards.InPlay
 }
 
 func InitializePlaygroup(s int) Playgroup {
@@ -104,32 +104,30 @@ func InitializeSupplyPile( c cards.Card, n int ) cards.SupplyPile {
 }
 */
 
-func PlayTurn(pg Playgroup) Playgroup {
+func PlayTurn(pg *Playgroup) {
 
 	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
 
-	pg = ActionPhase(pg)
-	pg = BuyPhase(pg)
-	pg = CleanupPhase(pg)
+	ActionPhase(pg)
+	BuyPhase(pg)
+	CleanupPhase(pg)
 
 	pg.PlayerTurn++ // advance play to next turn
 	if pg.PlayerTurn >= len(pg.Players) {
 		pg.PlayerTurn = 0
 	}
 
-	return pg
 }
 
-func ActionPhase(pg Playgroup) Playgroup {
+func ActionPhase(pg *Playgroup) {
 	fmt.Printf("\t%s's turn ActionPhase\n", pg.Players[pg.PlayerTurn].Name)
 	ac := getActionCards(pg.Players[pg.PlayerTurn].Hand)
 	for _, c := range ac {
 		fmt.Println("\t\taction card", c.Name)
 	}
-	return pg
 }
 
-func BuyPhase(pg Playgroup) Playgroup {
+func BuyPhase(pg *Playgroup) {
 	p := pg.Players[pg.PlayerTurn]
 	fmt.Printf("\t%s's turn BuyPhase\n", p.Name)
 	var tc []cards.Card
@@ -144,21 +142,23 @@ func BuyPhase(pg Playgroup) Playgroup {
 		}
 	}
 	pg.Players[pg.PlayerTurn] = p
-	return pg
 }
 
-func CleanupPhase(pg Playgroup) Playgroup {
+func CleanupPhase(pg *Playgroup) {
 	fmt.Printf("\t%s's turn CleanupPhase\n", pg.Players[pg.PlayerTurn].Name)
-	return pg
 }
 
-func Draw(p Player, d int) Player {
+func Draw(p *Player, d int) {
 	for i := 0; i < d; i++ {
 		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
 		p.Deck.Cards = z
 		p.Hand.Cards = append(p.Hand.Cards, c)
+		if len(p.Deck.Cards) == 0 {
+			p.Deck.Cards = p.DiscardPile.Cards
+			p.DiscardPile.Cards = p.DiscardPile.Cards[:0]
+			cards.ShuffleDeck(&p.Deck)
+		}
 	}
-	return p
 }
 
 func getActionCards(hand cards.Hand) []cards.Card {
@@ -196,8 +196,7 @@ func getTreasureCardsIndexes(hand cards.Hand) []int {
 }
 */
 
-func playCard(h cards.Hand, n int) (cards.Card, cards.Hand) {
-	c := h.Cards[n]
-	h.Cards = append(h.Cards[:n], h.Cards[n+1:]...)
-	return c, h
+func playCard(p *Player, n int) {
+	p.InPlay.Cards = append(p.InPlay.Cards, p.Hand.Cards[n])
+	p.Hand.Cards = append(p.Hand.Cards[:n], p.Hand.Cards[n+1:]...)
 }
