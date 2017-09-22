@@ -43,6 +43,10 @@ type Hand struct {
 	Cards []Card
 }
 
+type InPlay struct {
+	Cards []Card
+}
+
 type DiscardPile struct {
 	Cards []Card
 }

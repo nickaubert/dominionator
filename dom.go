@@ -20,19 +20,6 @@ func main() {
 		pg.Players[i] = p
 	}
 
-	/*
-		for _, p := range pg.Players {
-	        fmt.Println(p.Name, "Hand")
-	        for _, c := range p.Hand.Cards {
-			    fmt.Printf("\t%s\n", c.Name)
-	        }
-	        fmt.Println(p.Name, "Deck")
-	        for _, c := range p.Deck.Cards {
-			    fmt.Printf("\t%s\n", c.Name)
-	        }
-	    }
-	*/
-
 	for _, p := range pg.Supply.Piles {
 		fmt.Println("pile", p.Count, p.Card.Name)
 	}

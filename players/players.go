@@ -17,8 +17,16 @@ type Player struct {
 type Playgroup struct {
 	Players    []Player
 	PlayerTurn int
+	ThisTurn   ThisTurn
 	Supply     cards.Supply
 	Trash      cards.Trash
+}
+
+type ThisTurn struct {
+	Actions int
+	Coins   int
+	Buys    int
+	InPlay  cards.InPlay
 }
 
 func InitializePlaygroup(s int) Playgroup {
@@ -114,11 +122,28 @@ func PlayTurn(pg Playgroup) Playgroup {
 
 func ActionPhase(pg Playgroup) Playgroup {
 	fmt.Printf("\t%s's turn ActionPhase\n", pg.Players[pg.PlayerTurn].Name)
+	ac := getActionCards(pg.Players[pg.PlayerTurn].Hand)
+	for _, c := range ac {
+		fmt.Println("\t\taction card", c.Name)
+	}
 	return pg
 }
 
 func BuyPhase(pg Playgroup) Playgroup {
-	fmt.Printf("\t%s's turn BuyPhase\n", pg.Players[pg.PlayerTurn].Name)
+	p := pg.Players[pg.PlayerTurn]
+	fmt.Printf("\t%s's turn BuyPhase\n", p.Name)
+	var tc []cards.Card
+	tc, p.Hand.Cards = getTreasureCards(p.Hand)
+	// decision whether to put each card into play will go here
+	decide := true
+	for _, c := range tc {
+		if decide == true {
+			fmt.Println("\t\tplay", c.Name)
+		} else {
+			p.Hand.Cards = append(p.Hand.Cards, c)
+		}
+	}
+	pg.Players[pg.PlayerTurn] = p
 	return pg
 }
 
@@ -134,4 +159,45 @@ func Draw(p Player, d int) Player {
 		p.Hand.Cards = append(p.Hand.Cards, c)
 	}
 	return p
+}
+
+func getActionCards(hand cards.Hand) []cards.Card {
+	var ac []cards.Card
+	for _, c := range hand.Cards {
+		if c.CTypes.Action == true {
+			ac = append(ac, c)
+		}
+	}
+	return ac
+}
+
+func getTreasureCards(hand cards.Hand) ([]cards.Card, []cards.Card) {
+	var tc []cards.Card // treasure cards
+	var oc []cards.Card // other cards
+	for _, c := range hand.Cards {
+		if c.CTypes.Treasure == true {
+			tc = append(tc, c)
+		} else {
+			oc = append(oc, c)
+		}
+	}
+	return tc, oc
+}
+
+/*
+func getTreasureCardsIndexes(hand cards.Hand) []int {
+    var i []int
+    for n, c := range hand.Cards {
+        if c.CTypes.Treasure == true {
+            i = append(i, n)
+        }
+    }
+    return i
+}
+*/
+
+func playCard(h cards.Hand, n int) (cards.Card, cards.Hand) {
+	c := h.Cards[n]
+	h.Cards = append(h.Cards[:n], h.Cards[n+1:]...)
+	return c, h
 }
