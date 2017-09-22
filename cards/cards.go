@@ -48,6 +48,15 @@ type WholeDeck struct {
 	DiscardPile DiscardPile
 }
 
+type SupplyPile struct {
+    Card    Card
+    Count   int
+}
+
+type Supply struct {
+    Piles   []SupplyPile
+}
+
 func ShuffleDeck(d Deck) Deck {
 	rand.Seed(time.Now().UTC().UnixNano())
 	time.Sleep(time.Duration(rand.Int31n(10)) * time.Nanosecond) // more randomness?

@@ -12,10 +12,7 @@ func main() {
 
 	fmt.Println("Dominion!")
 
-	pg := players.InitializePlaygroup(2)
-
-    sqp := players.InitializeSequence(pg)
-
+	pg := players.InitializePlaygroup(3)
 	for _, p := range pg.Players {
 		fmt.Println(p.Name)
 		p.Deck = cards.ShuffleDeck(p.Deck)
@@ -23,5 +20,23 @@ func main() {
 			fmt.Println("card", n+1, c.Name)
 		}
 	}
+    fmt.Println()
+
+    sp := players.InitializeSupply(pg)
+    for _, p := range sp.Piles {
+        fmt.Println("pile", p.Count, p.Card.Name)
+    }
+    fmt.Println()
+
+    stopit := 0 // break for testing
+    for ; ; {
+
+        pg = players.PlayTurn(pg)
+
+        stopit++
+        if stopit > 10 {
+            break
+        }
+    }
 
 }
