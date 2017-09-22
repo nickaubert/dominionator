@@ -11,20 +11,28 @@ import players "github.com/nickaubert/dominionator/players"
 func main() {
 
 	fmt.Println("Dominion!")
+	fmt.Println()
 
 	pg := players.InitializePlaygroup(3)
-	for _, p := range pg.Players {
-		// fmt.Println(p.Name)
+	for i, p := range pg.Players {
 		p.Deck = cards.ShuffleDeck(p.Deck)
-		/*
-			for n, c := range p.Deck.Cards {
-				fmt.Println("card", n+1, c.Name)
-			}
-		*/
+		p = players.Draw(p, 5)
+		pg.Players[i] = p
 	}
-	// fmt.Println()
 
-	// sp := players.InitializeSupply(pg)
+	/*
+		for _, p := range pg.Players {
+	        fmt.Println(p.Name, "Hand")
+	        for _, c := range p.Hand.Cards {
+			    fmt.Printf("\t%s\n", c.Name)
+	        }
+	        fmt.Println(p.Name, "Deck")
+	        for _, c := range p.Deck.Cards {
+			    fmt.Printf("\t%s\n", c.Name)
+	        }
+	    }
+	*/
+
 	for _, p := range pg.Supply.Piles {
 		fmt.Println("pile", p.Count, p.Card.Name)
 	}

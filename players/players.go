@@ -126,3 +126,12 @@ func CleanupPhase(pg Playgroup) Playgroup {
 	fmt.Printf("\t%s's turn CleanupPhase\n", pg.Players[pg.PlayerTurn].Name)
 	return pg
 }
+
+func Draw(p Player, d int) Player {
+	for i := 0; i < d; i++ {
+		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
+		p.Deck.Cards = z
+		p.Hand.Cards = append(p.Hand.Cards, c)
+	}
+	return p
+}
