@@ -62,32 +62,41 @@ func InitializeSupply(pg Playgroup) cards.Supply {
 	var s cards.Supply
 	var sp cards.SupplyPile
 
+    /* coin cards */
 	sp.Card = basic.DefCopper()
-	sp.Count = 10
+	sp.Count = 60 - ( len(pg.Players) * 7 )
 	s.Piles = append(s.Piles, sp)
 
 	sp.Card = basic.DefSilver()
-	sp.Count = 10
+	sp.Count = 40
 	s.Piles = append(s.Piles, sp)
 
 	sp.Card = basic.DefGold()
-	sp.Count = 10
+	sp.Count = 30
 	s.Piles = append(s.Piles, sp)
 
+    /* victory cards */
+	sp.Count = 12
+    if len(pg.Players) == 2 {
+	    sp.Count = 8
+    }
 	sp.Card = basic.DefEstate()
-	sp.Count = 10
 	s.Piles = append(s.Piles, sp)
-
 	sp.Card = basic.DefDuchy()
-	sp.Count = 10
 	s.Piles = append(s.Piles, sp)
 
+    if len(pg.Players) == 5 {
+	    sp.Count = 15
+    }
+    if len(pg.Players) == 6 {
+	    sp.Count = 18
+    }
 	sp.Card = basic.DefProvince()
-	sp.Count = 10
 	s.Piles = append(s.Piles, sp)
 
+    /* curses */
 	sp.Card = basic.DefCurse()
-	sp.Count = 10
+	sp.Count = 10 * ( len(pg.Players) - 1 )
 	s.Piles = append(s.Piles, sp)
 
 	return s
