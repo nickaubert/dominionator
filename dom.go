@@ -4,17 +4,17 @@ import (
 	"fmt"
 )
 
-import players "github.com/nickaubert/dominionator/players"
+import pl "github.com/nickaubert/dominionator/players"
 
 func main() {
 
 	fmt.Println("Dominion!")
 	fmt.Println()
 
-	pg := players.InitializePlaygroup(3)
+	pg := pl.InitializePlaygroup(3)
 	for n := range pg.Players {
-		players.ShuffleDeck(&pg.Players[n])
-		players.Draw(&pg.Players[n], 5)
+		pl.ShuffleDeck(&pg.Players[n])
+		pl.Draw(&pg.Players[n], 5)
 	}
 
 	fmt.Println("starting supply:")
@@ -27,13 +27,14 @@ func main() {
 	for {
 
 		turnCount++
-		endGame := players.PlayTurn(&pg)
+		endGame := pl.PlayTurn(&pg)
 
 		if endGame == true {
 			break
 		}
 
 		if turnCount > 200 {
+			fmt.Println("Interrupted game at turn 201")
 			break
 		}
 
@@ -46,6 +47,6 @@ func main() {
 	}
 	fmt.Println()
 
-	players.CheckScores(pg)
+	pl.CheckScores(pg)
 
 }

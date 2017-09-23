@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-import cards "github.com/nickaubert/dominionator/cards"
-import basic "github.com/nickaubert/dominionator/basic"
+import cd "github.com/nickaubert/dominionator/cards"
+import bs "github.com/nickaubert/dominionator/basic"
 
 type Player struct {
-	Deck    []cards.Card
-	Hand    []cards.Card
-	InPlay  []cards.Card
-	Discard []cards.Card
+	Deck    []cd.Card
+	Hand    []cd.Card
+	InPlay  []cd.Card
+	Discard []cd.Card
 	Name    string
 }
 
@@ -21,8 +21,8 @@ type Playgroup struct {
 	Players    []Player
 	PlayerTurn int
 	ThisTurn   ThisTurn
-	Supply     cards.Supply
-	Trash      []cards.Card
+	Supply     cd.Supply
+	Trash      []cd.Card
 }
 
 type ThisTurn struct {
@@ -40,91 +40,21 @@ func InitializePlaygroup(s int) Playgroup {
 		pg.Players = append(pg.Players, pl)
 	}
 	pg.PlayerTurn = 0
-	pg.Supply = InitializeSupply(pg)
+	pg.Supply = bs.InitializeSupply(s)
 	return pg
 }
 
-func InitialDeck() []cards.Card {
-	var d []cards.Card
+func InitialDeck() []cd.Card {
+	var d []cd.Card
 	for i := 0; i < 7; i++ {
-		c := basic.DefCopper()
+		c := bs.DefCopper()
 		d = append(d, c)
 	}
 	for i := 0; i < 3; i++ {
-		c := basic.DefEstate()
+		c := bs.DefEstate()
 		d = append(d, c)
 	}
 	return d
-}
-
-func InitializeSupply(pg Playgroup) cards.Supply {
-
-	var s cards.Supply
-	var sp cards.SupplyPile
-
-	/* coin cards */
-	sp.Card = basic.DefCopper()
-	sp.Count = 60 - (len(pg.Players) * 7)
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefSilver()
-	sp.Count = 40
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefGold()
-	sp.Count = 30
-	s.Piles = append(s.Piles, sp)
-
-	/* victory cards */
-	sp.Count = 12
-	if len(pg.Players) == 2 {
-		sp.Count = 8
-	}
-	sp.Card = basic.DefEstate()
-	s.Piles = append(s.Piles, sp)
-	sp.Card = basic.DefDuchy()
-	s.Piles = append(s.Piles, sp)
-
-	if len(pg.Players) == 5 {
-		sp.Count = 15
-	}
-	if len(pg.Players) == 6 {
-		sp.Count = 18
-	}
-	sp.Card = basic.DefProvince()
-	s.Piles = append(s.Piles, sp)
-
-	/* curses */
-	sp.Card = basic.DefCurse()
-	sp.Count = 10 * (len(pg.Players) - 1)
-	s.Piles = append(s.Piles, sp)
-
-	/* kingdom */
-	sp.Card = basic.DefVillage()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefWoodcutter()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefSmithy()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefFestival()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefLaboratory()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	sp.Card = basic.DefMarket()
-	sp.Count = 10
-	s.Piles = append(s.Piles, sp)
-
-	return s
 }
 
 func PlayTurn(pg *Playgroup) bool {
@@ -191,7 +121,7 @@ func BuyPhase(pg *Playgroup) {
 	p := pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
 
-	var tc []cards.Card
+	var tc []cd.Card
 	tc, p.Hand = getTreasureCards(p.Hand)
 
 	// decision whether to put each card into play will go here
@@ -245,21 +175,9 @@ func Draw(p *Player, d int) {
 	}
 }
 
-/*
-func getActionCards(hand []cards.Card) []cards.Card {
-	var ac []cards.Card
-	for _, c := range hand {
-		if c.CTypes.Action == true {
-			ac = append(ac, c)
-		}
-	}
-	return ac
-}
-*/
-
-func getTreasureCards(hand []cards.Card) ([]cards.Card, []cards.Card) {
-	var tc []cards.Card // treasure cards
-	var oc []cards.Card // other cards
+func getTreasureCards(hand []cd.Card) ([]cd.Card, []cd.Card) {
+	var tc []cd.Card // treasure cards
+	var oc []cd.Card // other cards
 	for _, c := range hand {
 		if c.CTypes.Treasure == true {
 			tc = append(tc, c)
@@ -270,9 +188,9 @@ func getTreasureCards(hand []cards.Card) ([]cards.Card, []cards.Card) {
 	return tc, oc
 }
 
-func SelectCardBuy(o int, s cards.Supply) cards.Card {
+func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	// this is not the best heuristic
-	var bestCard cards.Card
+	var bestCard cd.Card
 	for _, c := range s.Piles {
 		if c.Count == 0 {
 			continue
@@ -287,7 +205,7 @@ func SelectCardBuy(o int, s cards.Supply) cards.Card {
 	return bestCard
 }
 
-func buyCard(p *Player, s *cards.Supply, c cards.Card) {
+func buyCard(p *Player, s *cd.Supply, c cd.Card) {
 	// assuming pile size is not zero
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
@@ -297,7 +215,7 @@ func buyCard(p *Player, s *cards.Supply, c cards.Card) {
 	}
 }
 
-func CheckEnd(s cards.Supply) bool {
+func CheckEnd(s cd.Supply) bool {
 	emptyPiles := 0
 	for _, pl := range s.Piles {
 		if pl.Card.Name == "Province" {
@@ -325,7 +243,7 @@ func CheckScores(pg Playgroup) {
 	}
 }
 
-func countVictoryPoints(d []cards.Card) int {
+func countVictoryPoints(d []cd.Card) int {
 	vp := 0
 	for _, c := range d {
 		vp += c.VP
@@ -336,7 +254,7 @@ func countVictoryPoints(d []cards.Card) int {
 func ShuffleDeck(p *Player) {
 	rand.Seed(time.Now().UnixNano())
 	d := p.Deck
-	var n []cards.Card
+	var n []cd.Card
 	for _ = range d {
 		r := rand.Intn(len(d))
 		n = append(n, d[r])
@@ -345,9 +263,9 @@ func ShuffleDeck(p *Player) {
 	p.Deck = n
 }
 
-func findActionTerminals(ac []cards.Card) ([]cards.Card, []cards.Card) {
-	var nt []cards.Card
-	var tm []cards.Card
+func findActionTerminals(ac []cd.Card) ([]cd.Card, []cd.Card) {
+	var nt []cd.Card
+	var tm []cd.Card
 	for _, c := range ac {
 		if c.CTypes.Action == false {
 			continue
@@ -361,9 +279,9 @@ func findActionTerminals(ac []cards.Card) ([]cards.Card, []cards.Card) {
 	return nt, tm
 }
 
-func highestCostCard(d []cards.Card) cards.Card {
+func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
-	var h cards.Card
+	var h cd.Card
 	for _, c := range d {
 		if c.Cost > o {
 			o = c.Cost
@@ -373,12 +291,12 @@ func highestCostCard(d []cards.Card) cards.Card {
 	return h
 }
 
-func playAction(pg *Playgroup, c cards.Card) {
+func playAction(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions--
 	pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
 	h := pg.Players[pg.PlayerTurn].Hand
-	for i, cd := range h {
-		if cd.Name == c.Name {
+	for i, ch := range h {
+		if ch.Name == c.Name {
 			pg.Players[pg.PlayerTurn].Hand = append(h[:i], h[i+1:]...)
 			break
 		}
@@ -386,14 +304,14 @@ func playAction(pg *Playgroup, c cards.Card) {
 	resolveEffects(pg, c)
 }
 
-func resolveEffects(pg *Playgroup, c cards.Card) {
+func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
 }
 
-func showHand(h []cards.Card) {
+func showHand(h []cd.Card) {
 	fmt.Print("\t\t hand: ")
 	for _, c := range h {
 		fmt.Print(c.Name, ", ")

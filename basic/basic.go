@@ -1,9 +1,9 @@
 package basic
 
-import cards "github.com/nickaubert/dominionator/cards"
+import cd "github.com/nickaubert/dominionator/cards"
 
-func DefCopper() cards.Card {
-	var c cards.Card
+func DefCopper() cd.Card {
+	var c cd.Card
 	c.Name = "Copper"
 	c.Cost = 0
 	c.Coins = 1
@@ -11,8 +11,8 @@ func DefCopper() cards.Card {
 	return c
 }
 
-func DefSilver() cards.Card {
-	var c cards.Card
+func DefSilver() cd.Card {
+	var c cd.Card
 	c.Name = "Silver"
 	c.Cost = 3
 	c.Coins = 2
@@ -20,8 +20,8 @@ func DefSilver() cards.Card {
 	return c
 }
 
-func DefGold() cards.Card {
-	var c cards.Card
+func DefGold() cd.Card {
+	var c cd.Card
 	c.Name = "Gold"
 	c.Cost = 6
 	c.Coins = 3
@@ -29,8 +29,8 @@ func DefGold() cards.Card {
 	return c
 }
 
-func DefEstate() cards.Card {
-	var c cards.Card
+func DefEstate() cd.Card {
+	var c cd.Card
 	c.Name = "Estate"
 	c.Cost = 2
 	c.VP = 1
@@ -38,8 +38,8 @@ func DefEstate() cards.Card {
 	return c
 }
 
-func DefDuchy() cards.Card {
-	var c cards.Card
+func DefDuchy() cd.Card {
+	var c cd.Card
 	c.Name = "Duchy"
 	c.Cost = 5
 	c.VP = 3
@@ -47,8 +47,8 @@ func DefDuchy() cards.Card {
 	return c
 }
 
-func DefProvince() cards.Card {
-	var c cards.Card
+func DefProvince() cd.Card {
+	var c cd.Card
 	c.Name = "Province"
 	c.Cost = 8
 	c.VP = 6
@@ -56,8 +56,8 @@ func DefProvince() cards.Card {
 	return c
 }
 
-func DefCurse() cards.Card {
-	var c cards.Card
+func DefCurse() cd.Card {
+	var c cd.Card
 	c.Name = "Curse"
 	c.Cost = 0
 	c.VP = -1
@@ -65,8 +65,8 @@ func DefCurse() cards.Card {
 	return c
 }
 
-func DefVillage() cards.Card {
-	var c cards.Card
+func DefVillage() cd.Card {
+	var c cd.Card
 	c.Name = "Village"
 	c.Cost = 3
 	c.CTypes.Action = true
@@ -75,8 +75,8 @@ func DefVillage() cards.Card {
 	return c
 }
 
-func DefSmithy() cards.Card {
-	var c cards.Card
+func DefSmithy() cd.Card {
+	var c cd.Card
 	c.Name = "Smithy"
 	c.Cost = 4
 	c.CTypes.Action = true
@@ -84,8 +84,8 @@ func DefSmithy() cards.Card {
 	return c
 }
 
-func DefFestival() cards.Card {
-	var c cards.Card
+func DefFestival() cd.Card {
+	var c cd.Card
 	c.Name = "Festival"
 	c.Cost = 5
 	c.CTypes.Action = true
@@ -95,8 +95,8 @@ func DefFestival() cards.Card {
 	return c
 }
 
-func DefLaboratory() cards.Card {
-	var c cards.Card
+func DefLaboratory() cd.Card {
+	var c cd.Card
 	c.Name = "Laboratory"
 	c.Cost = 5
 	c.CTypes.Action = true
@@ -105,8 +105,8 @@ func DefLaboratory() cards.Card {
 	return c
 }
 
-func DefMarket() cards.Card {
-	var c cards.Card
+func DefMarket() cd.Card {
+	var c cd.Card
 	c.Name = "Market"
 	c.Cost = 5
 	c.CTypes.Action = true
@@ -117,12 +117,52 @@ func DefMarket() cards.Card {
 	return c
 }
 
-func DefWoodcutter() cards.Card {
-	var c cards.Card
+func DefWoodcutter() cd.Card {
+	var c cd.Card
 	c.Name = "Woodcutter"
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.ExtraBuys = 1
 	c.Effects.ExtraCoins = 2
 	return c
+}
+
+func InitializeSupply(pl int) cd.Supply {
+
+	var s cd.Supply
+
+	/* coin cards */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCopper(), Count: 60 - (pl * 7)})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSilver(), Count: 40})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGold(), Count: 30})
+
+	/* victory cards */
+	vc := 12
+	pc := vc
+	switch pl {
+	case 2:
+		vc = 8
+		pc = 8
+	case 5:
+		pc = 15
+	case 6:
+		pc = 18
+	}
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefEstate(), Count: vc})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefProvince(), Count: pc})
+
+	/* curses */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCurse(), Count: 10 * (pl - 1)})
+
+	/* kingdom */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefFestival(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefLaboratory(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMarket(), Count: 10})
+
+	return s
 }
