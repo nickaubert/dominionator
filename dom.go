@@ -5,7 +5,7 @@ import (
 	// "strings"
 )
 
-import cards "github.com/nickaubert/dominionator/cards"
+// import cards "github.com/nickaubert/dominionator/cards"
 import players "github.com/nickaubert/dominionator/players"
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 
 	pg := players.InitializePlaygroup(3)
 	for n := range pg.Players {
-		cards.ShuffleDeck(&pg.Players[n].Deck)
+		players.ShuffleDeck(&pg.Players[n])
 		players.Draw(&pg.Players[n], 5)
 	}
 
@@ -25,7 +25,6 @@ func main() {
 	}
 	fmt.Println()
 
-	// stopit := 0 // break for testing
 	turnCount := 0
 	for {
 
@@ -36,12 +35,6 @@ func main() {
 			break
 		}
 
-		/*
-			stopit++
-			if stopit > 50 {
-				break
-			}
-		*/
 	}
 
 	fmt.Println(turnCount, "turns")

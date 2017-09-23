@@ -1,8 +1,8 @@
 package cards
 
 // import "fmt"
-import "math/rand"
-import "time"
+// import "math/rand"
+// import "time"
 
 type CType struct {
 	Action   bool
@@ -20,7 +20,7 @@ type Effect struct {
 	ExtraBuy    int
 	ExtraCoins  int
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
-	   Discard (from hand or from deck) to DiscardPile
+	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
 	   Trash (from hand or from deck) to Trash
 	*/
@@ -35,6 +35,7 @@ type Card struct {
 	Effects Effect
 }
 
+/*
 type Deck struct {
 	Cards []Card
 }
@@ -47,13 +48,14 @@ type InPlay struct {
 	Cards []Card
 }
 
-type DiscardPile struct {
+type Discard struct {
 	Cards []Card
 }
 
 type Trash struct {
 	Cards []Card
 }
+*/
 
 /*
 type WholeDeck struct {
@@ -72,6 +74,7 @@ type Supply struct {
 	Piles []SupplyPile
 }
 
+/*
 func ShuffleDeck(d *Deck) {
 	rand.Seed(time.Now().UnixNano())
 	// rand.NewSource(time.Now().UnixNano())
@@ -84,3 +87,4 @@ func ShuffleDeck(d *Deck) {
 	}
 	d.Cards = n.Cards
 }
+*/

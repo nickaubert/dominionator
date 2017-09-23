@@ -2,17 +2,23 @@ package players
 
 import (
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 import cards "github.com/nickaubert/dominionator/cards"
 import basic "github.com/nickaubert/dominionator/basic"
 
 type Player struct {
-	Deck        cards.Deck
-	Hand        cards.Hand
-	InPlay      cards.InPlay
-	DiscardPile cards.DiscardPile
-	Name        string
+	// Deck        cards.Deck
+	// Hand        cards.Hand
+	// InPlay      cards.InPlay
+	// Discard     cards.Discard
+	Deck    []cards.Card
+	Hand    []cards.Card
+	InPlay  []cards.Card
+	Discard []cards.Card
+	Name    string
 }
 
 type Playgroup struct {
@@ -20,7 +26,8 @@ type Playgroup struct {
 	PlayerTurn int
 	ThisTurn   ThisTurn
 	Supply     cards.Supply
-	Trash      cards.Trash
+	// Trash      cards.Trash
+	Trash []cards.Card
 }
 
 type ThisTurn struct {
@@ -42,18 +49,18 @@ func InitializePlaygroup(s int) Playgroup {
 	return pg
 }
 
-func InitialDeck() cards.Deck {
-	var d cards.Deck
-	s := make([]cards.Card, 0)
+func InitialDeck() []cards.Card {
+	var d []cards.Card
+	// s := make([]cards.Card, 0)
 	for i := 0; i < 7; i++ {
 		c := basic.DefCopper()
-		s = append(s, c)
+		d = append(d, c)
 	}
 	for i := 0; i < 3; i++ {
 		c := basic.DefEstate()
-		s = append(s, c)
+		d = append(d, c)
 	}
-	d.Cards = s
+	// d.Cards = s
 	return d
 }
 
@@ -122,7 +129,7 @@ func PlayTurn(pg *Playgroup) bool {
 	pg.ThisTurn.Coins = 0
 
 	fmt.Println("\t\thand:")
-	for _, c := range pg.Players[pg.PlayerTurn].Hand.Cards {
+	for _, c := range pg.Players[pg.PlayerTurn].Hand {
 		fmt.Println("\t\t", c.Name)
 	}
 
@@ -154,16 +161,16 @@ func BuyPhase(pg *Playgroup) {
 	fmt.Println("\t BuyPhase")
 
 	var tc []cards.Card
-	tc, p.Hand.Cards = getTreasureCards(p.Hand)
+	tc, p.Hand = getTreasureCards(p.Hand)
 
 	// decision whether to put each card into play will go here
 	decide := true
 	for _, c := range tc {
 		if decide == true {
 			// fmt.Println("\t\t play", c.Name)
-			p.InPlay.Cards = append(p.InPlay.Cards, c)
+			p.InPlay = append(p.InPlay, c)
 		} else {
-			p.Hand.Cards = append(p.Hand.Cards, c)
+			p.Hand = append(p.Hand, c)
 		}
 	}
 
@@ -185,34 +192,31 @@ func BuyPhase(pg *Playgroup) {
 
 func CleanupPhase(pg *Playgroup) {
 	fmt.Println("\t CleanupPhase")
-	// pg.ThisTurn.Actions = 0
-	// pg.ThisTurn.Buys = 0
-	// pg.ThisTurn.Coins = 0
 	p := pg.Players[pg.PlayerTurn]
-	p.DiscardPile.Cards = append(p.DiscardPile.Cards, p.InPlay.Cards...)
-	p.DiscardPile.Cards = append(p.DiscardPile.Cards, p.Hand.Cards...)
-	p.Hand.Cards = p.Hand.Cards[:0]
-	p.InPlay.Cards = p.InPlay.Cards[:0]
+	p.Discard = append(p.Discard, p.InPlay...)
+	p.Discard = append(p.Discard, p.Hand...)
+	p.Hand = p.Hand[:0]
+	p.InPlay = p.InPlay[:0]
 	Draw(&p, 5)
 	pg.Players[pg.PlayerTurn] = p
 }
 
 func Draw(p *Player, d int) {
 	for i := 0; i < d; i++ {
-		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
-		p.Deck.Cards = z
-		p.Hand.Cards = append(p.Hand.Cards, c)
-		if len(p.Deck.Cards) == 0 {
-			p.Deck.Cards = p.DiscardPile.Cards
-			p.DiscardPile.Cards = p.DiscardPile.Cards[:0]
-			cards.ShuffleDeck(&p.Deck)
+		c, z := p.Deck[0], p.Deck[1:]
+		p.Deck = z
+		p.Hand = append(p.Hand, c)
+		if len(p.Deck) == 0 {
+			p.Deck = p.Discard
+			p.Discard = p.Discard[:0]
+			ShuffleDeck(p)
 		}
 	}
 }
 
-func getActionCards(hand cards.Hand) []cards.Card {
+func getActionCards(hand []cards.Card) []cards.Card {
 	var ac []cards.Card
-	for _, c := range hand.Cards {
+	for _, c := range hand {
 		if c.CTypes.Action == true {
 			ac = append(ac, c)
 		}
@@ -220,10 +224,10 @@ func getActionCards(hand cards.Hand) []cards.Card {
 	return ac
 }
 
-func getTreasureCards(hand cards.Hand) ([]cards.Card, []cards.Card) {
+func getTreasureCards(hand []cards.Card) ([]cards.Card, []cards.Card) {
 	var tc []cards.Card // treasure cards
 	var oc []cards.Card // other cards
-	for _, c := range hand.Cards {
+	for _, c := range hand {
 		if c.CTypes.Treasure == true {
 			tc = append(tc, c)
 		} else {
@@ -255,7 +259,7 @@ func buyCard(p *Player, s *cards.Supply, c cards.Card) {
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
 			s.Piles[n].Count--
-			p.DiscardPile.Cards = append(p.DiscardPile.Cards, c)
+			p.Discard = append(p.Discard, c)
 		}
 	}
 }
@@ -280,18 +284,30 @@ func CheckEnd(s cards.Supply) bool {
 
 func CheckScores(pg Playgroup) {
 	for _, p := range pg.Players {
-		p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
-		p.Deck.Cards = append(p.Deck.Cards, p.DiscardPile.Cards...)
-		p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
+		p.Deck = append(p.Deck, p.Hand...)
+		p.Deck = append(p.Deck, p.Discard...)
+		p.Deck = append(p.Deck, p.InPlay...)
 		vp := countVictoryPoints(p.Deck)
 		fmt.Println(p.Name, vp, "points")
 	}
 }
 
-func countVictoryPoints(d cards.Deck) int {
+func countVictoryPoints(d []cards.Card) int {
 	vp := 0
-	for _, c := range d.Cards {
+	for _, c := range d {
 		vp += c.VP
 	}
 	return vp
+}
+
+func ShuffleDeck(p *Player) {
+	rand.Seed(time.Now().UnixNano())
+	d := p.Deck
+	var n []cards.Card
+	for _ = range d {
+		r := rand.Intn(len(d))
+		n = append(n, d[r])
+		d = append(d[:r], d[r+1:]...)
+	}
+	p.Deck = n
 }
