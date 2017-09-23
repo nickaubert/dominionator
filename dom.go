@@ -25,22 +25,32 @@ func main() {
 	}
 	fmt.Println()
 
-	stopit := 0 // break for testing
+	// stopit := 0 // break for testing
+	turnCount := 0
 	for {
 
-		players.PlayTurn(&pg)
-		fmt.Println()
+		turnCount++
+		endGame := players.PlayTurn(&pg)
 
-		stopit++
-		if stopit > 50 {
+		if endGame == true {
 			break
 		}
+
+		/*
+			stopit++
+			if stopit > 50 {
+				break
+			}
+		*/
 	}
 
+	fmt.Println(turnCount, "turns")
 	fmt.Println("ending supply:")
 	for _, p := range pg.Supply.Piles {
 		fmt.Println("pile", p.Count, p.Card.Name)
 	}
 	fmt.Println()
+
+	players.CheckScores(pg)
 
 }

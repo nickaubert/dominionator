@@ -113,7 +113,7 @@ func InitializeSupplyPile( c cards.Card, n int ) cards.SupplyPile {
 }
 */
 
-func PlayTurn(pg *Playgroup) {
+func PlayTurn(pg *Playgroup) bool {
 
 	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
 
@@ -134,6 +134,9 @@ func PlayTurn(pg *Playgroup) {
 	if pg.PlayerTurn >= len(pg.Players) {
 		pg.PlayerTurn = 0
 	}
+
+	endGame := CheckEnd(pg.Supply)
+	return endGame
 
 }
 
@@ -255,4 +258,40 @@ func buyCard(p *Player, s *cards.Supply, c cards.Card) {
 			p.DiscardPile.Cards = append(p.DiscardPile.Cards, c)
 		}
 	}
+}
+
+func CheckEnd(s cards.Supply) bool {
+	emptyPiles := 0
+	for _, pl := range s.Piles {
+		if pl.Card.Name == "Province" {
+			if pl.Count == 0 {
+				return true
+			}
+		}
+		if pl.Count == 0 {
+			emptyPiles++
+		}
+	}
+	if emptyPiles >= 3 {
+		return true
+	}
+	return false
+}
+
+func CheckScores(pg Playgroup) {
+	for _, p := range pg.Players {
+		p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
+		p.Deck.Cards = append(p.Deck.Cards, p.DiscardPile.Cards...)
+		p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
+		vp := countVictoryPoints(p.Deck)
+		fmt.Println(p.Name, vp, "points")
+	}
+}
+
+func countVictoryPoints(d cards.Deck) int {
+	vp := 0
+	for _, c := range d.Cards {
+		vp += c.VP
+	}
+	return vp
 }
