@@ -19,6 +19,7 @@ func main() {
 		players.Draw(&pg.Players[n], 5)
 	}
 
+	fmt.Println("starting supply:")
 	for _, p := range pg.Supply.Piles {
 		fmt.Println("pile", p.Count, p.Card.Name)
 	}
@@ -31,9 +32,15 @@ func main() {
 		fmt.Println()
 
 		stopit++
-		if stopit > 10 {
+		if stopit > 50 {
 			break
 		}
 	}
+
+	fmt.Println("ending supply:")
+	for _, p := range pg.Supply.Piles {
+		fmt.Println("pile", p.Count, p.Card.Name)
+	}
+	fmt.Println()
 
 }

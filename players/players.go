@@ -121,12 +121,10 @@ func PlayTurn(pg *Playgroup) {
 	pg.ThisTurn.Buys = 1
 	pg.ThisTurn.Coins = 0
 
-	/*
-	   fmt.Println("\t\thand:")
-	   for _, c := range pg.Players[pg.PlayerTurn].Hand.Cards {
-	       fmt.Println("\t\t", c.Name)
-	   }
-	*/
+	fmt.Println("\t\thand:")
+	for _, c := range pg.Players[pg.PlayerTurn].Hand.Cards {
+		fmt.Println("\t\t", c.Name)
+	}
 
 	ActionPhase(pg)
 	BuyPhase(pg)
@@ -157,10 +155,9 @@ func BuyPhase(pg *Playgroup) {
 
 	// decision whether to put each card into play will go here
 	decide := true
-
 	for _, c := range tc {
 		if decide == true {
-			fmt.Println("\t\t play", c.Name)
+			// fmt.Println("\t\t play", c.Name)
 			p.InPlay.Cards = append(p.InPlay.Cards, c)
 		} else {
 			p.Hand.Cards = append(p.Hand.Cards, c)
@@ -177,6 +174,7 @@ func BuyPhase(pg *Playgroup) {
 		// decision which card to buy here
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
 		fmt.Println("\t\t select buy", c.Name)
+		buyCard(&p, &pg.Supply, c)
 	}
 
 	pg.Players[pg.PlayerTurn] = p
@@ -247,4 +245,14 @@ func SelectCardBuy(o int, s cards.Supply) cards.Card {
 		}
 	}
 	return bestCard
+}
+
+func buyCard(p *Player, s *cards.Supply, c cards.Card) {
+	// assuming pile size is not zero
+	for n, pl := range s.Piles {
+		if pl.Card.Name == c.Name {
+			s.Piles[n].Count--
+			p.DiscardPile.Cards = append(p.DiscardPile.Cards, c)
+		}
+	}
 }
