@@ -73,8 +73,9 @@ type Supply struct {
 }
 
 func ShuffleDeck(d *Deck) {
-	rand.Seed(time.Now().UTC().UnixNano())
-	time.Sleep(time.Duration(rand.Int31n(10)) * time.Nanosecond) // more randomness?
+	rand.Seed(time.Now().UnixNano())
+	// rand.NewSource(time.Now().UnixNano())
+	// time.Sleep(time.Duration(rand.Int31n(10)) * time.Nanosecond) // more randomness?
 	var n Deck
 	for _ = range d.Cards {
 		r := rand.Intn(len(d.Cards))

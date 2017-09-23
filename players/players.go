@@ -62,9 +62,9 @@ func InitializeSupply(pg Playgroup) cards.Supply {
 	var s cards.Supply
 	var sp cards.SupplyPile
 
-    /* coin cards */
+	/* coin cards */
 	sp.Card = basic.DefCopper()
-	sp.Count = 60 - ( len(pg.Players) * 7 )
+	sp.Count = 60 - (len(pg.Players) * 7)
 	s.Piles = append(s.Piles, sp)
 
 	sp.Card = basic.DefSilver()
@@ -75,28 +75,28 @@ func InitializeSupply(pg Playgroup) cards.Supply {
 	sp.Count = 30
 	s.Piles = append(s.Piles, sp)
 
-    /* victory cards */
+	/* victory cards */
 	sp.Count = 12
-    if len(pg.Players) == 2 {
-	    sp.Count = 8
-    }
+	if len(pg.Players) == 2 {
+		sp.Count = 8
+	}
 	sp.Card = basic.DefEstate()
 	s.Piles = append(s.Piles, sp)
 	sp.Card = basic.DefDuchy()
 	s.Piles = append(s.Piles, sp)
 
-    if len(pg.Players) == 5 {
-	    sp.Count = 15
-    }
-    if len(pg.Players) == 6 {
-	    sp.Count = 18
-    }
+	if len(pg.Players) == 5 {
+		sp.Count = 15
+	}
+	if len(pg.Players) == 6 {
+		sp.Count = 18
+	}
 	sp.Card = basic.DefProvince()
 	s.Piles = append(s.Piles, sp)
 
-    /* curses */
+	/* curses */
 	sp.Card = basic.DefCurse()
-	sp.Count = 10 * ( len(pg.Players) - 1 )
+	sp.Count = 10 * (len(pg.Players) - 1)
 	s.Piles = append(s.Piles, sp)
 
 	return s
@@ -117,6 +117,17 @@ func PlayTurn(pg *Playgroup) {
 
 	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
 
+	pg.ThisTurn.Actions = 1
+	pg.ThisTurn.Buys = 1
+	pg.ThisTurn.Coins = 0
+
+	/*
+	   fmt.Println("\t\thand:")
+	   for _, c := range pg.Players[pg.PlayerTurn].Hand.Cards {
+	       fmt.Println("\t\t", c.Name)
+	   }
+	*/
+
 	ActionPhase(pg)
 	BuyPhase(pg)
 	CleanupPhase(pg)
@@ -129,17 +140,17 @@ func PlayTurn(pg *Playgroup) {
 }
 
 func ActionPhase(pg *Playgroup) {
-	fmt.Printf("\t%s's turn ActionPhase\n", pg.Players[pg.PlayerTurn].Name)
+	fmt.Println("\t ActionPhase")
 	ac := getActionCards(pg.Players[pg.PlayerTurn].Hand)
 	for _, c := range ac {
-		fmt.Println("\t\taction card", c.Name)
+		fmt.Println("\t\t action card", c.Name)
 	}
 }
 
 func BuyPhase(pg *Playgroup) {
 
 	p := pg.Players[pg.PlayerTurn]
-	fmt.Printf("\t%s's turn BuyPhase\n", p.Name)
+	fmt.Println("\t BuyPhase")
 
 	var tc []cards.Card
 	tc, p.Hand.Cards = getTreasureCards(p.Hand)
@@ -149,7 +160,7 @@ func BuyPhase(pg *Playgroup) {
 
 	for _, c := range tc {
 		if decide == true {
-			fmt.Println("\t\tplay", c.Name)
+			fmt.Println("\t\t play", c.Name)
 			p.InPlay.Cards = append(p.InPlay.Cards, c)
 		} else {
 			p.Hand.Cards = append(p.Hand.Cards, c)
@@ -160,18 +171,26 @@ func BuyPhase(pg *Playgroup) {
 		pg.ThisTurn.Coins += c.Coins
 	}
 
-	fmt.Println(p.Name, "has", pg.ThisTurn.Coins, "coins to spend")
+	fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
+
+	for i := 0; i < pg.ThisTurn.Buys; i++ {
+		// decision which card to buy here
+		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
+		fmt.Println("\t\t select buy", c.Name)
+	}
 
 	pg.Players[pg.PlayerTurn] = p
 }
 
 func CleanupPhase(pg *Playgroup) {
-	fmt.Printf("\t%s's turn CleanupPhase\n", pg.Players[pg.PlayerTurn].Name)
-	pg.ThisTurn.Actions = 0
-	pg.ThisTurn.Buys = 0
-	pg.ThisTurn.Coins = 0
+	fmt.Println("\t CleanupPhase")
+	// pg.ThisTurn.Actions = 0
+	// pg.ThisTurn.Buys = 0
+	// pg.ThisTurn.Coins = 0
 	p := pg.Players[pg.PlayerTurn]
 	p.DiscardPile.Cards = append(p.DiscardPile.Cards, p.InPlay.Cards...)
+	p.DiscardPile.Cards = append(p.DiscardPile.Cards, p.Hand.Cards...)
+	p.Hand.Cards = p.Hand.Cards[:0]
 	p.InPlay.Cards = p.InPlay.Cards[:0]
 	Draw(&p, 5)
 	pg.Players[pg.PlayerTurn] = p
@@ -213,14 +232,19 @@ func getTreasureCards(hand cards.Hand) ([]cards.Card, []cards.Card) {
 	return tc, oc
 }
 
-/*
-func getTreasureCardsIndexes(hand cards.Hand) []int {
-    var i []int
-    for n, c := range hand.Cards {
-        if c.CTypes.Treasure == true {
-            i = append(i, n)
-        }
-    }
-    return i
+func SelectCardBuy(o int, s cards.Supply) cards.Card {
+	// this is not the best heuristic
+	var bestCard cards.Card
+	for _, c := range s.Piles {
+		if c.Count == 0 {
+			continue
+		}
+		if c.Card.Cost > o {
+			continue
+		}
+		if c.Card.Cost > bestCard.Cost {
+			bestCard = c.Card
+		}
+	}
+	return bestCard
 }
-*/

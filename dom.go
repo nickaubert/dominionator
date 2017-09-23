@@ -28,6 +28,7 @@ func main() {
 	for {
 
 		players.PlayTurn(&pg)
+		fmt.Println()
 
 		stopit++
 		if stopit > 10 {
