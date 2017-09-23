@@ -1,9 +1,5 @@
 package cards
 
-// import "fmt"
-// import "math/rand"
-// import "time"
-
 type CType struct {
 	Action   bool
 	Treasure bool
@@ -15,10 +11,10 @@ type CType struct {
 }
 
 type Effect struct {
-	DrawCard    int
-	ExtraAction int
-	ExtraBuy    int
-	ExtraCoins  int
+	DrawCard     int
+	ExtraActions int
+	ExtraBuys    int
+	ExtraCoins   int
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
@@ -35,36 +31,6 @@ type Card struct {
 	Effects Effect
 }
 
-/*
-type Deck struct {
-	Cards []Card
-}
-
-type Hand struct {
-	Cards []Card
-}
-
-type InPlay struct {
-	Cards []Card
-}
-
-type Discard struct {
-	Cards []Card
-}
-
-type Trash struct {
-	Cards []Card
-}
-*/
-
-/*
-type WholeDeck struct {
-	Deck        Deck
-	Hand        Hand
-	DiscardPile DiscardPile
-}
-*/
-
 type SupplyPile struct {
 	Card  Card
 	Count int
@@ -73,18 +39,3 @@ type SupplyPile struct {
 type Supply struct {
 	Piles []SupplyPile
 }
-
-/*
-func ShuffleDeck(d *Deck) {
-	rand.Seed(time.Now().UnixNano())
-	// rand.NewSource(time.Now().UnixNano())
-	// time.Sleep(time.Duration(rand.Int31n(10)) * time.Nanosecond) // more randomness?
-	var n Deck
-	for _ = range d.Cards {
-		r := rand.Intn(len(d.Cards))
-		n.Cards = append(n.Cards, d.Cards[r])
-		d.Cards = append(d.Cards[:r], d.Cards[r+1:]...)
-	}
-	d.Cards = n.Cards
-}
-*/

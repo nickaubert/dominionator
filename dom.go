@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	// "strings"
 )
 
-// import cards "github.com/nickaubert/dominionator/cards"
 import players "github.com/nickaubert/dominionator/players"
 
 func main() {
@@ -32,6 +30,10 @@ func main() {
 		endGame := players.PlayTurn(&pg)
 
 		if endGame == true {
+			break
+		}
+
+		if turnCount > 200 {
 			break
 		}
 

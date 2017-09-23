@@ -71,7 +71,7 @@ func DefVillage() cards.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
-	c.Effects.ExtraAction = 2
+	c.Effects.ExtraActions = 2
 	return c
 }
 
@@ -89,8 +89,8 @@ func DefFestival() cards.Card {
 	c.Name = "Festival"
 	c.Cost = 5
 	c.CTypes.Action = true
-	c.Effects.ExtraAction = 2
-	c.Effects.ExtraBuy = 1
+	c.Effects.ExtraActions = 2
+	c.Effects.ExtraBuys = 1
 	c.Effects.ExtraCoins = 2
 	return c
 }
@@ -101,7 +101,7 @@ func DefLaboratory() cards.Card {
 	c.Cost = 5
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 2
-	c.Effects.ExtraAction = 1
+	c.Effects.ExtraActions = 1
 	return c
 }
 
@@ -111,8 +111,8 @@ func DefMarket() cards.Card {
 	c.Cost = 5
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
-	c.Effects.ExtraAction = 1
-	c.Effects.ExtraBuy = 1
+	c.Effects.ExtraActions = 1
+	c.Effects.ExtraBuys = 1
 	c.Effects.ExtraCoins = 1
 	return c
 }
@@ -122,7 +122,7 @@ func DefWoodcutter() cards.Card {
 	c.Name = "Woodcutter"
 	c.Cost = 3
 	c.CTypes.Action = true
-	c.Effects.ExtraBuy = 1
+	c.Effects.ExtraBuys = 1
 	c.Effects.ExtraCoins = 2
 	return c
 }
