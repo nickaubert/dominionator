@@ -28,7 +28,7 @@ type Effect struct {
 	ExtraBuys    int
 	ExtraCoins   int
 	Sequence     []Sequence
-	TrashUpTo    int // move to sequence?
+	// TrashUpTo    int // move to sequence?
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
@@ -40,6 +40,7 @@ type Sequence struct {
 	/// Num     int  // order of events
 	// Counter int  // counter of things (eg. discard "X" cards)
 	CountDiscard int // max cards to discard, goes into "X" counter
+	CountTrash   int // max cards to trash, goes into "X" counter
 	// (1000 == infinite?)
 	DrawCount bool // Draw "X" cards
 }

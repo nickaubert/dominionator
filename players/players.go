@@ -52,9 +52,7 @@ func PlayTurn(pg *Playgroup) bool {
 	pg.ThisTurn.Buys = 1
 	pg.ThisTurn.Coins = 0
 
-	showHand(pg.Players[pg.PlayerTurn].Hand)
 	ActionPhase(pg)
-	showHand(pg.Players[pg.PlayerTurn].Hand)
 
 	BuyPhase(pg)
 	CleanupPhase(pg)
@@ -100,6 +98,7 @@ func BuyPhase(pg *Playgroup) {
 
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
+	showHand(pg.Players[pg.PlayerTurn].Hand)
 
 	for pg.ThisTurn.Buys > 0 {
 
@@ -130,6 +129,7 @@ func CleanupPhase(pg *Playgroup) {
 func Draw(p *Player, d int) {
 	for i := 0; i < d; i++ {
 		c, z := p.Deck[0], p.Deck[1:]
+		// fmt.Println("\t\t\t drawing", c.Name)
 		p.Deck = z
 		p.Hand = append(p.Hand, c)
 		if len(p.Deck) == 0 {
@@ -325,7 +325,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
-	trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo) // move to sequence?
+	// trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo) // move to sequence?
 	resolveSequence(pg, c)
 }
 
@@ -337,13 +337,28 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		if s.CountDiscard > 0 {
 			// decision point here
 			vc := findVictoryCards(p.Hand)
-			for _, v := range vc {
+			for j, v := range vc {
+				if j > s.CountDiscard {
+					break
+				}
 				discardCard(p, v)
 				countX++
 			}
 		}
 		if s.DrawCount == true {
 			Draw(p, countX)
+		}
+		if s.CountTrash > 0 {
+			// decision point here
+			cc := findCurses(p.Hand)
+			for j, u := range cc {
+				if j > s.CountTrash {
+					break
+				}
+				removeFromHand(p, u)
+				trashFromHand(p, pg, u)
+				countX++
+			}
 		}
 	}
 }
@@ -383,6 +398,7 @@ func showStatus(pg *Playgroup, c cd.Card) {
 }
 
 func playActionCard(pg *Playgroup, c cd.Card) {
+	showHand(pg.Players[pg.PlayerTurn].Hand)
 	fmt.Println("\t\t playing", c.Name)
 	pg.ThisTurn.Actions--
 	playCard(&pg.Players[pg.PlayerTurn], c)
@@ -413,6 +429,7 @@ func playCard(p *Player, c cd.Card) {
 }
 
 func discardCard(p *Player, c cd.Card) {
+	fmt.Println("\t\t\t discarding", c.Name)
 	removeFromHand(p, c)
 	p.Discard = append(p.Discard, c)
 	/*
@@ -458,6 +475,7 @@ func removeFromHand(p *Player, c cd.Card) {
 }
 
 func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
+	fmt.Println("\t\t\t trashing", c.Name)
 	removeFromHand(p, c)
 	pg.Trash = append(pg.Trash, c)
 }
