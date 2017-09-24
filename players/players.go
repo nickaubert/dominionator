@@ -109,7 +109,7 @@ func BuyPhase(pg *Playgroup) {
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
-		buyCard(p, &pg.Supply, c)
+		gainCard(p, &pg.Supply, c)
 		pg.ThisTurn.Buys--
 
 	}
@@ -157,10 +157,12 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	return bestCard
 }
 
-func buyCard(p *Player, s *cd.Supply, c cd.Card) {
-	// assuming pile size is not zero
+func gainCard(p *Player, s *cd.Supply, c cd.Card) {
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
+			if s.Piles[n].Count == 0 {
+				return
+			}
 			s.Piles[n].Count--
 			p.Discard = append(p.Discard, c)
 		}
@@ -291,19 +293,29 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
 }
 
+/*
 func resolveAttacks(pg *Playgroup, c cd.Card) {
 	for i := range pg.Players {
 		if i == pg.PlayerTurn {
 			continue
 		}
-		applyAttack(&pg.Players[i], c)
+		applyAttack(pg, c)
 	}
 }
+*/
 
-func applyAttack(p *Player, c cd.Card) {
-	fmt.Println("\t\tAttacking", p.Name)
-	if c.Attacks.DiscardTo > 0 {
-		discardTo(p, 3)
+func resolveAttacks(pg *Playgroup, c cd.Card) {
+	for i := range pg.Players {
+		if i == pg.PlayerTurn {
+			continue
+		}
+		fmt.Println("\t\tAttacking", pg.Players[i].Name)
+		if c.Attacks.DiscardTo > 0 {
+			discardTo(&pg.Players[i], c.Attacks.DiscardTo)
+		}
+		if c.Attacks.GainCurse > 0 {
+			gainCurse(&pg.Players[i], &pg.Supply, c.Attacks.GainCurse)
+		}
 	}
 }
 
@@ -372,5 +384,11 @@ func discardTo(p *Player, m int) {
 	for len(p.Hand) > m {
 		d := selectDiscardOwn(p)
 		discardCard(p, d)
+	}
+}
+
+func gainCurse(p *Player, s *cd.Supply, m int) {
+	for i := 0; i < m; i++ {
+		gainCard(p, s, bs.DefCurse())
 	}
 }

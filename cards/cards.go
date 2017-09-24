@@ -24,6 +24,7 @@ type Effect struct {
 
 type Attack struct {
 	DiscardTo int
+	GainCurse int
 }
 
 type Card struct {

@@ -138,6 +138,17 @@ func DefWoodcutter() cd.Card {
 	return c
 }
 
+func DefWitch() cd.Card {
+	var c cd.Card
+	c.Name = "Witch"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.CTypes.Attack = true
+	c.Effects.DrawCard = 2
+	c.Attacks.GainCurse = 1
+	return c
+}
+
 func InitialDeck() []cd.Card {
 	var d []cd.Card
 	for i := 0; i < 7; i++ {
@@ -188,6 +199,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMilitia(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWitch(), Count: 10})
 
 	return s
 }
