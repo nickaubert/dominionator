@@ -273,6 +273,17 @@ func findCurses(h []cd.Card) []cd.Card {
 	return cc
 }
 
+func findReactions(h []cd.Card) []cd.Card {
+	var rc []cd.Card
+	for _, c := range h {
+		if c.CTypes.Reaction == false {
+			continue
+		}
+		rc = append(rc, c)
+	}
+	return rc
+}
+
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
 	var h cd.Card
@@ -305,23 +316,17 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo)
 }
 
-/*
 func resolveAttacks(pg *Playgroup, c cd.Card) {
 	for i := range pg.Players {
 		if i == pg.PlayerTurn {
 			continue
 		}
-		applyAttack(pg, c)
-	}
-}
-*/
-
-func resolveAttacks(pg *Playgroup, c cd.Card) {
-	for i := range pg.Players {
-		if i == pg.PlayerTurn {
+		fmt.Println("\t\t Attacking", pg.Players[i].Name)
+		defended := checkReactions(&pg.Players[i])
+		if defended == true {
+			fmt.Println("\t\t defended!")
 			continue
 		}
-		fmt.Println("\t\tAttacking", pg.Players[i].Name)
 		if c.Attacks.DiscardTo > 0 {
 			discardTo(&pg.Players[i], c.Attacks.DiscardTo)
 		}
@@ -434,4 +439,15 @@ func trashUpTo(p *Player, pg *Playgroup, t int) {
 			trashFromHand(p, pg, cc[0])
 		}
 	}
+}
+func checkReactions(p *Player) bool {
+	defended := false
+	rc := findReactions(p.Hand)
+	for _, c := range rc {
+		// decision point here
+		if c.Reactions.Defend == true {
+			defended = true
+		}
+	}
+	return defended
 }

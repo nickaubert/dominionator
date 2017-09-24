@@ -74,6 +74,17 @@ func DefChapel() cd.Card {
 	return c
 }
 
+func DefMoat() cd.Card {
+	var c cd.Card
+	c.Name = "Moat"
+	c.Cost = 2
+	c.CTypes.Action = true
+	c.CTypes.Reaction = true
+	c.Effects.DrawCard = 2
+	c.Reactions.Defend = true
+	return c
+}
+
 func DefVillage() cd.Card {
 	var c cd.Card
 	c.Name = "Village"
@@ -194,7 +205,6 @@ func InitializeSupply(pl int) cd.Supply {
 	}
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefEstate(), Count: vc})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefProvince(), Count: pc})
 
 	/* curses */
@@ -202,6 +212,7 @@ func InitializeSupply(pl int) cd.Supply {
 
 	/* kingdom */
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefChapel(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMoat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})

@@ -28,14 +28,19 @@ type Attack struct {
 	GainCurse int
 }
 
+type Reaction struct {
+	Defend bool
+}
+
 type Card struct {
-	Name    string
-	Cost    int
-	VP      int
-	Coins   int
-	CTypes  CType
-	Effects Effect
-	Attacks Attack
+	Name      string
+	Cost      int
+	VP        int
+	Coins     int
+	CTypes    CType
+	Effects   Effect
+	Attacks   Attack
+	Reactions Reaction
 }
 
 type SupplyPile struct {
