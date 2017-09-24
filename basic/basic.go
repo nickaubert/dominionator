@@ -117,6 +117,17 @@ func DefMarket() cd.Card {
 	return c
 }
 
+func DefMilitia() cd.Card {
+	var c cd.Card
+	c.Name = "Militia"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.CTypes.Attack = true
+	c.Effects.ExtraCoins = 2
+	c.Attacks.DiscardTo = 3
+	return c
+}
+
 func DefWoodcutter() cd.Card {
 	var c cd.Card
 	c.Name = "Woodcutter"
@@ -176,6 +187,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMarket(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMilitia(), Count: 10})
 
 	return s
 }

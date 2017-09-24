@@ -22,6 +22,10 @@ type Effect struct {
 	*/
 }
 
+type Attack struct {
+	DiscardTo int
+}
+
 type Card struct {
 	Name    string
 	Cost    int
@@ -29,6 +33,7 @@ type Card struct {
 	Coins   int
 	CTypes  CType
 	Effects Effect
+	Attacks Attack
 }
 
 type SupplyPile struct {

@@ -35,7 +35,6 @@ func InitializePlaygroup(s int) Playgroup {
 	var pg Playgroup
 	for i := 0; i < s; i++ {
 		var pl Player
-		// pl.Deck = InitialDeck()
 		pl.Deck = bs.InitialDeck()
 		pl.Name = fmt.Sprintf("Player%d", i)
 		pg.Players = append(pg.Players, pl)
@@ -83,13 +82,13 @@ func ActionPhase(pg *Playgroup) {
 		if len(nt) > 0 {
 			c := highestCostCard(nt)
 			playActionCard(pg, c)
-			showAction(pg, c)
+			showStatus(pg, c)
 			continue
 		}
 		if len(tm) > 0 {
 			c := highestCostCard(tm)
 			playActionCard(pg, c)
-			showAction(pg, c)
+			showStatus(pg, c)
 			continue
 		}
 		break
@@ -102,11 +101,10 @@ func BuyPhase(pg *Playgroup) {
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
 
-	// newer loop will look like action loop
 	for pg.ThisTurn.Buys > 0 {
 
-		tc := findTreasureCards(p.Hand)
 		// actual decisions about which cards to play will go here
+		tc := findTreasureCards(p.Hand)
 		playTreasureCards(pg, tc)
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
@@ -114,35 +112,7 @@ func BuyPhase(pg *Playgroup) {
 		buyCard(p, &pg.Supply, c)
 		pg.ThisTurn.Buys--
 
-		/*
-			    for i := 0; i < pg.ThisTurn.Buys; i++ {
-				    // decision which card to buy here
-				    fmt.Println("\t\t select buy", c.Name)
-				    buyCard(p, &pg.Supply, c)
-			    }
-		*/
-
 	}
-
-	/*
-		var tc []cd.Card
-		tc, p.Hand = getTreasureCards(p.Hand)
-
-		// decision whether to put each card into play will go here
-		decide := true
-		for _, c := range tc {
-			if decide == true {
-				// fmt.Println("\t\t play", c.Name)
-				p.InPlay = append(p.InPlay, c)
-			} else {
-				p.Hand = append(p.Hand, c)
-			}
-		}
-
-		for _, c := range tc {
-			pg.ThisTurn.Coins += c.Coins
-		}
-	*/
 
 }
 
@@ -169,21 +139,6 @@ func Draw(p *Player, d int) {
 		}
 	}
 }
-
-/*
-func getTreasureCards(hand []cd.Card) ([]cd.Card, []cd.Card) {
-	var tc []cd.Card // treasure cards
-	var oc []cd.Card // other cards
-	for _, c := range hand {
-		if c.CTypes.Treasure == true {
-			tc = append(tc, c)
-		} else {
-			oc = append(oc, c)
-		}
-	}
-	return tc, oc
-}
-*/
 
 func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	// this is not the best heuristic
@@ -287,6 +242,24 @@ func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
 	return nt, tm
 }
 
+func findVictoryCards(h []cd.Card) []cd.Card {
+	// finds victory cards that arent also treasure or action cards
+	var vc []cd.Card
+	for _, c := range h {
+		if c.CTypes.Victory == false {
+			continue
+		}
+		if c.CTypes.Treasure == true {
+			continue
+		}
+		if c.CTypes.Action == true {
+			continue
+		}
+		vc = append(vc, c)
+	}
+	return vc
+}
+
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
 	var h cd.Card
@@ -299,11 +272,39 @@ func highestCostCard(d []cd.Card) cd.Card {
 	return h
 }
 
+func lowestCostCard(d []cd.Card) cd.Card {
+	o := 100
+	var l cd.Card
+	for _, c := range d {
+		if c.Cost < o {
+			o = c.Cost
+			l = c
+		}
+	}
+	return l
+}
+
 func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
+}
+
+func resolveAttacks(pg *Playgroup, c cd.Card) {
+	for i := range pg.Players {
+		if i == pg.PlayerTurn {
+			continue
+		}
+		applyAttack(&pg.Players[i], c)
+	}
+}
+
+func applyAttack(p *Player, c cd.Card) {
+	fmt.Println("\t\tAttacking", p.Name)
+	if c.Attacks.DiscardTo > 0 {
+		discardTo(p, 3)
+	}
 }
 
 func showHand(h []cd.Card) {
@@ -314,26 +315,27 @@ func showHand(h []cd.Card) {
 	fmt.Print("\n")
 }
 
-func showAction(pg *Playgroup, c cd.Card) {
-	fmt.Println("\t\t played", c.Name)
+func showStatus(pg *Playgroup, c cd.Card) {
 	fmt.Println("\t\t\t actions", pg.ThisTurn.Actions)
 	fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
 func playActionCard(pg *Playgroup, c cd.Card) {
+	fmt.Println("\t\t playing", c.Name)
 	pg.ThisTurn.Actions--
 	playCard(&pg.Players[pg.PlayerTurn], c)
 	resolveEffects(pg, c)
+	if c.CTypes.Attack == true {
+		resolveAttacks(pg, c)
+	}
 }
 
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
-
 	for _, c := range tc {
 		playCard(&pg.Players[pg.PlayerTurn], c)
 		pg.ThisTurn.Coins += c.Coins
 	}
-
 }
 
 func playCard(p *Player, c cd.Card) {
@@ -343,5 +345,32 @@ func playCard(p *Player, c cd.Card) {
 			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
 			break
 		}
+	}
+}
+
+func discardCard(p *Player, c cd.Card) {
+	p.Discard = append(p.Discard, c)
+	for i, ch := range p.Hand {
+		if ch.Name == c.Name {
+			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+			break
+		}
+	}
+}
+
+func selectDiscardOwn(p *Player) cd.Card {
+	// discard victory cards first, then select lowest value
+	vc := findVictoryCards(p.Hand)
+	for _, c := range vc {
+		return c
+	}
+	c := lowestCostCard(p.Hand)
+	return c
+}
+
+func discardTo(p *Player, m int) {
+	for len(p.Hand) > m {
+		d := selectDiscardOwn(p)
+		discardCard(p, d)
 	}
 }
