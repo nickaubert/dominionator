@@ -45,6 +45,11 @@ func main() {
 	for _, p := range pg.Supply.Piles {
 		fmt.Println("pile", p.Count, p.Card.Name)
 	}
+	fmt.Print("ending trash: ")
+	for _, c := range pg.Trash {
+		fmt.Print(c.Name, ", ")
+	}
+	fmt.Print("\n")
 	fmt.Println()
 
 	pl.CheckScores(pg)

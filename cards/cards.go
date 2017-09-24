@@ -15,6 +15,7 @@ type Effect struct {
 	ExtraActions int
 	ExtraBuys    int
 	ExtraCoins   int
+	TrashUpTo    int
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply

@@ -262,6 +262,17 @@ func findVictoryCards(h []cd.Card) []cd.Card {
 	return vc
 }
 
+func findCurses(h []cd.Card) []cd.Card {
+	var cc []cd.Card
+	for _, c := range h {
+		if c.CTypes.Curse == false {
+			continue
+		}
+		cc = append(cc, c)
+	}
+	return cc
+}
+
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
 	var h cd.Card
@@ -291,6 +302,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
+	trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo)
 }
 
 /*
@@ -351,23 +363,29 @@ func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 }
 
 func playCard(p *Player, c cd.Card) {
+	removeFromHand(p, c)
 	p.InPlay = append(p.InPlay, c)
-	for i, ch := range p.Hand {
-		if ch.Name == c.Name {
-			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
-			break
+	/*
+		for i, ch := range p.Hand {
+			if ch.Name == c.Name {
+				p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+				break
+			}
 		}
-	}
+	*/
 }
 
 func discardCard(p *Player, c cd.Card) {
+	removeFromHand(p, c)
 	p.Discard = append(p.Discard, c)
-	for i, ch := range p.Hand {
-		if ch.Name == c.Name {
-			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
-			break
+	/*
+		for i, ch := range p.Hand {
+			if ch.Name == c.Name {
+				p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+				break
+			}
 		}
-	}
+	*/
 }
 
 func selectDiscardOwn(p *Player) cd.Card {
@@ -390,5 +408,30 @@ func discardTo(p *Player, m int) {
 func gainCurse(p *Player, s *cd.Supply, m int) {
 	for i := 0; i < m; i++ {
 		gainCard(p, s, bs.DefCurse())
+	}
+}
+
+func removeFromHand(p *Player, c cd.Card) {
+	for i, h := range p.Hand {
+		if h.Name == c.Name {
+			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+			break
+		}
+	}
+}
+
+func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
+	removeFromHand(p, c)
+	pg.Trash = append(pg.Trash, c)
+}
+
+func trashUpTo(p *Player, pg *Playgroup, t int) {
+	for i := 0; i < t; i++ {
+		// decision point here
+		cc := findCurses(p.Hand)
+		if len(cc) > 0 {
+			removeFromHand(p, cc[0])
+			trashFromHand(p, pg, cc[0])
+		}
 	}
 }

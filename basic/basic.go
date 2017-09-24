@@ -65,6 +65,15 @@ func DefCurse() cd.Card {
 	return c
 }
 
+func DefChapel() cd.Card {
+	var c cd.Card
+	c.Name = "Chapel"
+	c.Cost = 2
+	c.CTypes.Action = true
+	c.Effects.TrashUpTo = 4
+	return c
+}
+
 func DefVillage() cd.Card {
 	var c cd.Card
 	c.Name = "Village"
@@ -192,6 +201,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCurse(), Count: 10 * (pl - 1)})
 
 	/* kingdom */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefChapel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})
