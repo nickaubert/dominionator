@@ -79,16 +79,16 @@ func ActionPhase(pg *Playgroup) {
 
 	// play action cards as long as we can starting with non-terminals
 	for pg.ThisTurn.Actions > 0 {
-		nt, tm := findActionTerminals(p.Hand)
+		nt, tm := findActionCards(p.Hand)
 		if len(nt) > 0 {
 			c := highestCostCard(nt)
-			playAction(pg, c)
+			playActionCard(pg, c)
 			showAction(pg, c)
 			continue
 		}
 		if len(tm) > 0 {
 			c := highestCostCard(tm)
-			playAction(pg, c)
+			playActionCard(pg, c)
 			showAction(pg, c)
 			continue
 		}
@@ -102,40 +102,47 @@ func BuyPhase(pg *Playgroup) {
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
 
-	/*
-	    // newer loop will look like action loop
-		for pg.ThisTurn.Buys > 0 {
-		    tc = findTreasureCards(p.Hand)
-	        playTreasureCards(pg, tc)
-	    }
-	*/
+	// newer loop will look like action loop
+	for pg.ThisTurn.Buys > 0 {
 
-	var tc []cd.Card
-	tc, p.Hand = getTreasureCards(p.Hand)
+		tc := findTreasureCards(p.Hand)
+		// actual decisions about which cards to play will go here
+		playTreasureCards(pg, tc)
 
-	// decision whether to put each card into play will go here
-	decide := true
-	for _, c := range tc {
-		if decide == true {
-			// fmt.Println("\t\t play", c.Name)
-			p.InPlay = append(p.InPlay, c)
-		} else {
-			p.Hand = append(p.Hand, c)
-		}
-	}
-
-	for _, c := range tc {
-		pg.ThisTurn.Coins += c.Coins
-	}
-
-	fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
-
-	for i := 0; i < pg.ThisTurn.Buys; i++ {
-		// decision which card to buy here
+		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
-		fmt.Println("\t\t select buy", c.Name)
 		buyCard(p, &pg.Supply, c)
+		pg.ThisTurn.Buys--
+
+		/*
+			    for i := 0; i < pg.ThisTurn.Buys; i++ {
+				    // decision which card to buy here
+				    fmt.Println("\t\t select buy", c.Name)
+				    buyCard(p, &pg.Supply, c)
+			    }
+		*/
+
 	}
+
+	/*
+		var tc []cd.Card
+		tc, p.Hand = getTreasureCards(p.Hand)
+
+		// decision whether to put each card into play will go here
+		decide := true
+		for _, c := range tc {
+			if decide == true {
+				// fmt.Println("\t\t play", c.Name)
+				p.InPlay = append(p.InPlay, c)
+			} else {
+				p.Hand = append(p.Hand, c)
+			}
+		}
+
+		for _, c := range tc {
+			pg.ThisTurn.Coins += c.Coins
+		}
+	*/
 
 }
 
@@ -163,6 +170,7 @@ func Draw(p *Player, d int) {
 	}
 }
 
+/*
 func getTreasureCards(hand []cd.Card) ([]cd.Card, []cd.Card) {
 	var tc []cd.Card // treasure cards
 	var oc []cd.Card // other cards
@@ -175,6 +183,7 @@ func getTreasureCards(hand []cd.Card) ([]cd.Card, []cd.Card) {
 	}
 	return tc, oc
 }
+*/
 
 func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	// this is not the best heuristic
@@ -251,7 +260,18 @@ func ShuffleDeck(p *Player) {
 	p.Deck = n
 }
 
-func findActionTerminals(ac []cd.Card) ([]cd.Card, []cd.Card) {
+func findTreasureCards(h []cd.Card) []cd.Card {
+	var tc []cd.Card
+	for _, c := range h {
+		if c.CTypes.Treasure == false {
+			continue
+		}
+		tc = append(tc, c)
+	}
+	return tc
+}
+
+func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
 	var nt []cd.Card
 	var tm []cd.Card
 	for _, c := range ac {
@@ -279,22 +299,6 @@ func highestCostCard(d []cd.Card) cd.Card {
 	return h
 }
 
-func playAction(pg *Playgroup, c cd.Card) {
-	pg.ThisTurn.Actions--
-	playCard(&pg.Players[pg.PlayerTurn], c)
-	/*
-		pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
-		h := pg.Players[pg.PlayerTurn].Hand
-		for i, ch := range h {
-			if ch.Name == c.Name {
-				pg.Players[pg.PlayerTurn].Hand = append(h[:i], h[i+1:]...)
-				break
-			}
-		}
-	*/
-	resolveEffects(pg, c)
-}
-
 func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
@@ -317,16 +321,20 @@ func showAction(pg *Playgroup, c cd.Card) {
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
-/*
-func playTreasureCards(pg *Playgroup, tc cd.Card) {
+func playActionCard(pg *Playgroup, c cd.Card) {
+	pg.ThisTurn.Actions--
+	playCard(&pg.Players[pg.PlayerTurn], c)
+	resolveEffects(pg, c)
+}
 
-    for _, c := range tc {
-	    pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
-	    h := pg.Players[pg.PlayerTurn].Hand
-    }
+func playTreasureCards(pg *Playgroup, tc []cd.Card) {
+
+	for _, c := range tc {
+		playCard(&pg.Players[pg.PlayerTurn], c)
+		pg.ThisTurn.Coins += c.Coins
+	}
 
 }
-*/
 
 func playCard(p *Player, c cd.Card) {
 	p.InPlay = append(p.InPlay, c)
