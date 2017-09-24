@@ -35,26 +35,14 @@ func InitializePlaygroup(s int) Playgroup {
 	var pg Playgroup
 	for i := 0; i < s; i++ {
 		var pl Player
-		pl.Deck = InitialDeck()
+		// pl.Deck = InitialDeck()
+		pl.Deck = bs.InitialDeck()
 		pl.Name = fmt.Sprintf("Player%d", i)
 		pg.Players = append(pg.Players, pl)
 	}
 	pg.PlayerTurn = 0
 	pg.Supply = bs.InitializeSupply(s)
 	return pg
-}
-
-func InitialDeck() []cd.Card {
-	var d []cd.Card
-	for i := 0; i < 7; i++ {
-		c := bs.DefCopper()
-		d = append(d, c)
-	}
-	for i := 0; i < 3; i++ {
-		c := bs.DefEstate()
-		d = append(d, c)
-	}
-	return d
 }
 
 func PlayTurn(pg *Playgroup) bool {
@@ -86,40 +74,41 @@ func ActionPhase(pg *Playgroup) {
 
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t ActionPhase")
-	/*
-		// ac := getActionCards(pg.Players[pg.PlayerTurn].Hand)
-		for _, c := range ac {
-			fmt.Println("\t\t action card", c.Name)
-		}
-	*/
+
 	// decision which action cards to play will go here
+
+	// play action cards as long as we can starting with non-terminals
 	for pg.ThisTurn.Actions > 0 {
-		nt, _ := findActionTerminals(p.Hand)
-		if len(nt) == 0 {
-			break
+		nt, tm := findActionTerminals(p.Hand)
+		if len(nt) > 0 {
+			c := highestCostCard(nt)
+			playAction(pg, c)
+			showAction(pg, c)
+			continue
 		}
-		c := highestCostCard(nt)
-		playAction(pg, c)
-		fmt.Println("\t\t played", c.Name)
-		fmt.Println("\t\t\t actions", pg.ThisTurn.Actions)
-		fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
-		fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
+		if len(tm) > 0 {
+			c := highestCostCard(tm)
+			playAction(pg, c)
+			showAction(pg, c)
+			continue
+		}
+		break
 	}
-	_, tm := findActionTerminals(p.Hand)
-	if len(tm) > 0 {
-		c := highestCostCard(tm)
-		playAction(pg, c)
-		fmt.Println("\t\t played terminal", c.Name)
-		fmt.Println("\t\t\t actions", pg.ThisTurn.Actions)
-		fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
-		fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
-	}
+
 }
 
 func BuyPhase(pg *Playgroup) {
 
-	p := pg.Players[pg.PlayerTurn]
+	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
+
+	/*
+	    // newer loop will look like action loop
+		for pg.ThisTurn.Buys > 0 {
+		    tc = findTreasureCards(p.Hand)
+	        playTreasureCards(pg, tc)
+	    }
+	*/
 
 	var tc []cd.Card
 	tc, p.Hand = getTreasureCards(p.Hand)
@@ -145,10 +134,9 @@ func BuyPhase(pg *Playgroup) {
 		// decision which card to buy here
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
 		fmt.Println("\t\t select buy", c.Name)
-		buyCard(&p, &pg.Supply, c)
+		buyCard(p, &pg.Supply, c)
 	}
 
-	pg.Players[pg.PlayerTurn] = p
 }
 
 func CleanupPhase(pg *Playgroup) {
@@ -293,14 +281,17 @@ func highestCostCard(d []cd.Card) cd.Card {
 
 func playAction(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions--
-	pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
-	h := pg.Players[pg.PlayerTurn].Hand
-	for i, ch := range h {
-		if ch.Name == c.Name {
-			pg.Players[pg.PlayerTurn].Hand = append(h[:i], h[i+1:]...)
-			break
+	playCard(&pg.Players[pg.PlayerTurn], c)
+	/*
+		pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
+		h := pg.Players[pg.PlayerTurn].Hand
+		for i, ch := range h {
+			if ch.Name == c.Name {
+				pg.Players[pg.PlayerTurn].Hand = append(h[:i], h[i+1:]...)
+				break
+			}
 		}
-	}
+	*/
 	resolveEffects(pg, c)
 }
 
@@ -317,4 +308,32 @@ func showHand(h []cd.Card) {
 		fmt.Print(c.Name, ", ")
 	}
 	fmt.Print("\n")
+}
+
+func showAction(pg *Playgroup, c cd.Card) {
+	fmt.Println("\t\t played", c.Name)
+	fmt.Println("\t\t\t actions", pg.ThisTurn.Actions)
+	fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
+	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
+}
+
+/*
+func playTreasureCards(pg *Playgroup, tc cd.Card) {
+
+    for _, c := range tc {
+	    pg.Players[pg.PlayerTurn].InPlay = append(pg.Players[pg.PlayerTurn].InPlay, c)
+	    h := pg.Players[pg.PlayerTurn].Hand
+    }
+
+}
+*/
+
+func playCard(p *Player, c cd.Card) {
+	p.InPlay = append(p.InPlay, c)
+	for i, ch := range p.Hand {
+		if ch.Name == c.Name {
+			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+			break
+		}
+	}
 }

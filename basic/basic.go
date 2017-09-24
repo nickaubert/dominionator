@@ -127,6 +127,19 @@ func DefWoodcutter() cd.Card {
 	return c
 }
 
+func InitialDeck() []cd.Card {
+	var d []cd.Card
+	for i := 0; i < 7; i++ {
+		c := DefCopper()
+		d = append(d, c)
+	}
+	for i := 0; i < 3; i++ {
+		c := DefEstate()
+		d = append(d, c)
+	}
+	return d
+}
+
 func InitializeSupply(pl int) cd.Supply {
 
 	var s cd.Supply
