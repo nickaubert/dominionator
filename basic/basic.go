@@ -70,7 +70,6 @@ func DefChapel() cd.Card {
 	c.Name = "Chapel"
 	c.Cost = 2
 	c.CTypes.Action = true
-	// c.Effects.TrashUpTo = 4
 	var s1 cd.Sequence
 	s1.CountTrash = 4
 	c.Effects.Sequence = append(c.Effects.Sequence, s1)
@@ -110,6 +109,22 @@ func DefVillage() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
 	c.Effects.ExtraActions = 2
+	return c
+}
+
+func DefHarbinger() cd.Card {
+	var c cd.Card
+	c.Name = "Harbinger"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.DrawCard = 1
+	c.Effects.ExtraActions = 1
+	var s1 cd.Sequence
+	s1.RetrieveDiscard = 1
+	c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	var s2 cd.Sequence
+	s2.PlaceDeck = true
+	c.Effects.Sequence = append(c.Effects.Sequence, s2)
 	return c
 }
 
@@ -243,6 +258,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMoat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefHarbinger(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMilitia(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGardens(), Count: 10})

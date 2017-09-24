@@ -98,7 +98,7 @@ func BuyPhase(pg *Playgroup) {
 
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
-	showHand(pg.Players[pg.PlayerTurn].Hand)
+	showCards("hand", pg.Players[pg.PlayerTurn].Hand)
 
 	for pg.ThisTurn.Buys > 0 {
 
@@ -325,16 +325,17 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
-	// trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo) // move to sequence?
 	resolveSequence(pg, c)
 }
 
 func resolveSequence(pg *Playgroup, c cd.Card) {
-	countX := 0
+	var cardSet []cd.Card
+	countX := 0 // replace with len(cardSet)?
 	p := &pg.Players[pg.PlayerTurn]
 	for i, s := range c.Effects.Sequence {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
+			// fmt.Println("==CountDiscard")
 			// decision point here
 			vc := findVictoryCards(p.Hand)
 			for j, v := range vc {
@@ -346,9 +347,11 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 		}
 		if s.DrawCount == true {
+			// fmt.Println("==DrawCount")
 			Draw(p, countX)
 		}
 		if s.CountTrash > 0 {
+			// fmt.Println("==CountTrash")
 			// decision point here
 			cc := findCurses(p.Hand)
 			for j, u := range cc {
@@ -359,6 +362,28 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 				trashFromHand(p, pg, u)
 				countX++
 			}
+		}
+		if s.RetrieveDiscard > 0 {
+			// fmt.Println("==RetrieveDiscard")
+			// showCards("hand before", p.Hand)
+			for j := 0; j < s.RetrieveDiscard; j++ {
+				// showCards("hand during", p.Hand)
+				// decision point here
+				bc := bestPlayableCard(p.Discard)
+				// showCards("hand bc", p.Hand)
+				// must have found something
+				if bc.Name != "" {
+					removeFromDiscard(p, bc)
+					cardSet = append(cardSet, bc)
+				}
+				// showCards("hand cs", p.Hand)
+			}
+			// showCards("cardSet", cardSet)
+			// showCards("hand after", p.Hand)
+		}
+		if s.PlaceDeck == true {
+			// fmt.Println("==PlaceDeck")
+			addDeckTop(p, cardSet)
 		}
 	}
 }
@@ -383,8 +408,8 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 	}
 }
 
-func showHand(h []cd.Card) {
-	fmt.Print("\t\t hand: ")
+func showCards(s string, h []cd.Card) {
+	fmt.Print("\t\t", s, ": ")
 	for _, c := range h {
 		fmt.Print(c.Name, ", ")
 	}
@@ -398,7 +423,7 @@ func showStatus(pg *Playgroup, c cd.Card) {
 }
 
 func playActionCard(pg *Playgroup, c cd.Card) {
-	showHand(pg.Players[pg.PlayerTurn].Hand)
+	showCards("hand", pg.Players[pg.PlayerTurn].Hand)
 	fmt.Println("\t\t playing", c.Name)
 	pg.ThisTurn.Actions--
 	playCard(&pg.Players[pg.PlayerTurn], c)
@@ -474,6 +499,15 @@ func removeFromHand(p *Player, c cd.Card) {
 	}
 }
 
+func removeFromDiscard(p *Player, c cd.Card) {
+	for i, h := range p.Discard {
+		if h.Name == c.Name {
+			p.Discard = append(p.Discard[:i], p.Discard[i+1:]...)
+			break
+		}
+	}
+}
+
 func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
 	fmt.Println("\t\t\t trashing", c.Name)
 	removeFromHand(p, c)
@@ -490,6 +524,7 @@ func trashUpTo(p *Player, pg *Playgroup, t int) {
 		}
 	}
 }
+
 func checkReactions(p *Player) bool {
 	defended := false
 	rc := findReactions(p.Hand)
@@ -500,4 +535,34 @@ func checkReactions(p *Player) bool {
 		}
 	}
 	return defended
+}
+
+func addDeckTop(p *Player, cs []cd.Card) {
+	for _, c := range cs {
+		fmt.Println("\t\t\t place on top of deck:", c.Name)
+	}
+	p.Deck = append(cs, p.Deck...)
+}
+
+func bestPlayableCard(cs []cd.Card) cd.Card {
+	o := -1
+	var b cd.Card
+	var keepit bool
+	for _, c := range cs {
+		keepit = false
+		if c.CTypes.Action == true {
+			keepit = true
+		}
+		if c.CTypes.Treasure == true {
+			keepit = true
+		}
+		if keepit == false {
+			continue
+		}
+		if c.Cost > o {
+			o = c.Cost
+			b = c
+		}
+	}
+	return b
 }

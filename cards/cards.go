@@ -37,12 +37,11 @@ type Effect struct {
 }
 
 type Sequence struct {
-	/// Num     int  // order of events
-	// Counter int  // counter of things (eg. discard "X" cards)
-	CountDiscard int // max cards to discard, goes into "X" counter
-	CountTrash   int // max cards to trash, goes into "X" counter
-	// (1000 == infinite?)
-	DrawCount bool // Draw "X" cards
+	CountDiscard    int  // max cards to discard
+	CountTrash      int  // max cards to trash
+	RetrieveDiscard int  // max cards to pull from discard
+	DrawCount       bool // Draw "X" cards
+	PlaceDeck       bool // Place cards onto deck
 }
 
 type Attack struct {
