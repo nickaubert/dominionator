@@ -1,5 +1,17 @@
 package cards
 
+type Card struct {
+	Name      string
+	Cost      int
+	VP        int
+	Coins     int
+	CTypes    CType
+	Effects   Effect
+	Attacks   Attack
+	Reactions Reaction
+	Victories Victory
+}
+
 type CType struct {
 	Action   bool
 	Treasure bool
@@ -32,15 +44,8 @@ type Reaction struct {
 	Defend bool
 }
 
-type Card struct {
-	Name      string
-	Cost      int
-	VP        int
-	Coins     int
-	CTypes    CType
-	Effects   Effect
-	Attacks   Attack
-	Reactions Reaction
+type Victory struct {
+	CardsPerPoint int
 }
 
 type SupplyPile struct {

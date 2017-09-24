@@ -192,6 +192,15 @@ func CheckScores(pg Playgroup) {
 		p.Deck = append(p.Deck, p.Hand...)
 		p.Deck = append(p.Deck, p.Discard...)
 		p.Deck = append(p.Deck, p.InPlay...)
+
+		/*
+		   fmt.Println(p.Name, "deck:")
+		   for _, c := range p.Deck {
+		       fmt.Print(c.Name, ", ")
+		   }
+		   fmt.Print("\n")
+		*/
+
 		vp := countVictoryPoints(p.Deck)
 		fmt.Println(p.Name, vp, "points")
 	}
@@ -201,6 +210,9 @@ func countVictoryPoints(d []cd.Card) int {
 	vp := 0
 	for _, c := range d {
 		vp += c.VP
+		if c.Victories.CardsPerPoint > 0 {
+			vp += (len(d) / c.Victories.CardsPerPoint)
+		}
 	}
 	return vp
 }
