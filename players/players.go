@@ -325,7 +325,27 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
-	trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo)
+	trashUpTo(&pg.Players[pg.PlayerTurn], pg, c.Effects.TrashUpTo) // move to sequence?
+	resolveSequence(pg, c)
+}
+
+func resolveSequence(pg *Playgroup, c cd.Card) {
+	countX := 0
+	p := &pg.Players[pg.PlayerTurn]
+	for i, s := range c.Effects.Sequence {
+		fmt.Println("\t\t\t Sequence", i)
+		if s.CountDiscard > 0 {
+			// decision point here
+			vc := findVictoryCards(p.Hand)
+			for _, v := range vc {
+				discardCard(p, v)
+				countX++
+			}
+		}
+		if s.DrawCount == true {
+			Draw(p, countX)
+		}
+	}
 }
 
 func resolveAttacks(pg *Playgroup, c cd.Card) {
