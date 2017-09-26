@@ -128,6 +128,25 @@ func DefHarbinger() cd.Card {
 	return c
 }
 
+func DefVassal() cd.Card {
+	var c cd.Card
+	c.Name = "Vassal"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.ExtraCoins = 2
+	var s1 cd.Sequence
+	s1.DrawDeck = 1
+	c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	var s2 cd.Sequence
+	s2.DiscardNonAction = true
+	c.Effects.Sequence = append(c.Effects.Sequence, s2)
+	// need decision point here whether to play action
+	var s3 cd.Sequence
+	s3.PlayAction = 1
+	c.Effects.Sequence = append(c.Effects.Sequence, s3)
+	return c
+}
+
 func DefSmithy() cd.Card {
 	var c cd.Card
 	c.Name = "Smithy"
@@ -224,48 +243,48 @@ func InitialDeck() []cd.Card {
 	return d
 }
 
-func InitializeSupply(pl int) cd.Supply {
-
-	var s cd.Supply
-
-	/* coin cards */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCopper(), Count: 60 - (pl * 7)})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSilver(), Count: 40})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGold(), Count: 30})
-
-	/* victory cards */
-	vc := 12
-	pc := vc
-	switch pl {
-	case 2:
-		vc = 8
-		pc = 8
-	case 5:
-		pc = 15
-	case 6:
-		pc = 18
-	}
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefEstate(), Count: vc})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefProvince(), Count: pc})
-
-	/* curses */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCurse(), Count: 10 * (pl - 1)})
-
-	/* kingdom */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCellar(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefChapel(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMoat(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefHarbinger(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGardens(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefFestival(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefLaboratory(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMarket(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWitch(), Count: 10})
-
-	return s
-}
+//func InitializeSupply(pl int) cd.Supply {
+//
+//	var s cd.Supply
+//
+//	/* coin cards */
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCopper(), Count: 60 - (pl * 7)})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSilver(), Count: 40})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGold(), Count: 30})
+//
+//	/* victory cards */
+//	vc := 12
+//	pc := vc
+//	switch pl {
+//	case 2:
+//		vc = 8
+//		pc = 8
+//	case 5:
+//		pc = 15
+//	case 6:
+//		pc = 18
+//	}
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefEstate(), Count: vc})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefDuchy(), Count: vc})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefProvince(), Count: pc})
+//
+//	/* curses */
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCurse(), Count: 10 * (pl - 1)})
+//
+//	/* kingdom */
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefCellar(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefChapel(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMoat(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefVillage(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWoodcutter(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefHarbinger(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefSmithy(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMilitia(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefGardens(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefFestival(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefLaboratory(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefMarket(), Count: 10})
+//	s.Piles = append(s.Piles, cd.SupplyPile{Card: DefWitch(), Count: 10})
+//
+//	return s
+//}

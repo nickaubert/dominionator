@@ -40,7 +40,7 @@ func InitializePlaygroup(s int) Playgroup {
 		pg.Players = append(pg.Players, pl)
 	}
 	pg.PlayerTurn = 0
-	pg.Supply = bs.InitializeSupply(s)
+	pg.Supply = InitializeSupply(s)
 	return pg
 }
 
@@ -108,6 +108,7 @@ func BuyPhase(pg *Playgroup) {
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
+		fmt.Println("\t\t buying", c.Name)
 		gainCard(p, &pg.Supply, c)
 		pg.ThisTurn.Buys--
 
@@ -122,21 +123,30 @@ func CleanupPhase(pg *Playgroup) {
 	p.Discard = append(p.Discard, p.Hand...)
 	p.Hand = p.Hand[:0]
 	p.InPlay = p.InPlay[:0]
-	Draw(&p, 5)
+	nc := Draw(&p, 5)
+	AddHand(&p, nc)
 	pg.Players[pg.PlayerTurn] = p
 }
 
-func Draw(p *Player, d int) {
+func Draw(p *Player, d int) []cd.Card {
+	var nc []cd.Card
 	for i := 0; i < d; i++ {
 		c, z := p.Deck[0], p.Deck[1:]
 		// fmt.Println("\t\t\t drawing", c.Name)
 		p.Deck = z
-		p.Hand = append(p.Hand, c)
+		nc = append(nc, c)
 		if len(p.Deck) == 0 {
 			p.Deck = p.Discard
 			p.Discard = p.Discard[:0]
 			ShuffleDeck(p)
 		}
+	}
+	return nc
+}
+
+func AddHand(p *Player, nc []cd.Card) {
+	if len(nc) > 0 {
+		p.Hand = append(p.Hand, nc...)
 	}
 }
 
@@ -217,6 +227,7 @@ func countVictoryPoints(d []cd.Card) int {
 	return vp
 }
 
+// replace with ShuffleCards ?
 func ShuffleDeck(p *Player) {
 	rand.Seed(time.Now().UnixNano())
 	d := p.Deck
@@ -228,6 +239,21 @@ func ShuffleDeck(p *Player) {
 	}
 	p.Deck = n
 }
+
+/*
+// cant range over pointer
+func ShuffleCards(d *[]cd.Card) {
+	rand.Seed(time.Now().UnixNano())
+	var n []cd.Card
+    ud := *d
+	for _ = range ud {
+		r := rand.Intn(len(ud))
+		n = append(n, ud[r])
+		ud = append(ud[:r], ud[r+1:]...)
+	}
+	d = &n
+}
+*/
 
 func findTreasureCards(h []cd.Card) []cd.Card {
 	var tc []cd.Card
@@ -254,6 +280,19 @@ func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
 		}
 	}
 	return nt, tm
+}
+
+func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
+	var ac []cd.Card
+	var na []cd.Card
+	for _, c := range cs {
+		if c.CTypes.Action == true {
+			ac = append(ac, c)
+			continue
+		}
+		na = append(na, c)
+	}
+	return ac, na
 }
 
 func findVictoryCards(h []cd.Card) []cd.Card {
@@ -324,7 +363,11 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
-	Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
+	nc := Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
+	AddHand(&pg.Players[pg.PlayerTurn], nc)
+	if c.CTypes.Attack == true {
+		resolveAttacks(pg, c)
+	}
 	resolveSequence(pg, c)
 }
 
@@ -335,23 +378,22 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 	for i, s := range c.Effects.Sequence {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
-			// fmt.Println("==CountDiscard")
 			// decision point here
 			vc := findVictoryCards(p.Hand)
 			for j, v := range vc {
 				if j > s.CountDiscard {
 					break
 				}
-				discardCard(p, v)
+				// discardCard(p, v)
+				discardCards(p, []cd.Card{v})
 				countX++
 			}
 		}
 		if s.DrawCount == true {
-			// fmt.Println("==DrawCount")
-			Draw(p, countX)
+			nc := Draw(p, countX)
+			AddHand(p, nc)
 		}
 		if s.CountTrash > 0 {
-			// fmt.Println("==CountTrash")
 			// decision point here
 			cc := findCurses(p.Hand)
 			for j, u := range cc {
@@ -364,26 +406,40 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 		}
 		if s.RetrieveDiscard > 0 {
-			// fmt.Println("==RetrieveDiscard")
-			// showCards("hand before", p.Hand)
 			for j := 0; j < s.RetrieveDiscard; j++ {
-				// showCards("hand during", p.Hand)
 				// decision point here
 				bc := bestPlayableCard(p.Discard)
-				// showCards("hand bc", p.Hand)
 				// must have found something
 				if bc.Name != "" {
 					removeFromDiscard(p, bc)
 					cardSet = append(cardSet, bc)
 				}
-				// showCards("hand cs", p.Hand)
 			}
-			// showCards("cardSet", cardSet)
-			// showCards("hand after", p.Hand)
 		}
 		if s.PlaceDeck == true {
-			// fmt.Println("==PlaceDeck")
 			addDeckTop(p, cardSet)
+		}
+		if s.DrawDeck > 0 {
+			// fmt.Println("seq draw", s.DrawDeck)
+			cardSet = append(cardSet, Draw(p, s.DrawDeck)...)
+			// showCards("hand", p.Hand)
+			// showCards("cardSet", cardSet)
+		}
+		if s.DiscardNonAction == true {
+			ac, na := siftActionCards(cardSet)
+			// fmt.Println("seq keep", len(ac), "discard", len(na))
+			discardCards(p, na)
+			cardSet = ac
+		}
+		if s.PlayAction > 0 {
+			// possible decision point here whether to play any action
+			for _, c := range cardSet {
+				fmt.Println("\t\t\t seq play action", c.Name)
+				p.InPlay = append(p.InPlay, c)
+				for j := 0; j < s.PlayAction; j++ {
+					resolveEffects(pg, c)
+				}
+			}
 		}
 	}
 }
@@ -428,9 +484,6 @@ func playActionCard(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions--
 	playCard(&pg.Players[pg.PlayerTurn], c)
 	resolveEffects(pg, c)
-	if c.CTypes.Attack == true {
-		resolveAttacks(pg, c)
-	}
 }
 
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
@@ -443,28 +496,16 @@ func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 func playCard(p *Player, c cd.Card) {
 	removeFromHand(p, c)
 	p.InPlay = append(p.InPlay, c)
-	/*
-		for i, ch := range p.Hand {
-			if ch.Name == c.Name {
-				p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
-				break
-			}
-		}
-	*/
 }
 
-func discardCard(p *Player, c cd.Card) {
-	fmt.Println("\t\t\t discarding", c.Name)
-	removeFromHand(p, c)
-	p.Discard = append(p.Discard, c)
-	/*
-		for i, ch := range p.Hand {
-			if ch.Name == c.Name {
-				p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
-				break
-			}
-		}
-	*/
+func discardCards(p *Player, cs []cd.Card) {
+	fmt.Print("\t\t\t discarding ")
+	for _, c := range cs {
+		removeFromHand(p, c)
+		fmt.Print(c.Name, ", ")
+		p.Discard = append(p.Discard, c)
+	}
+	fmt.Print("\n")
 }
 
 func selectDiscardOwn(p *Player) cd.Card {
@@ -480,7 +521,8 @@ func selectDiscardOwn(p *Player) cd.Card {
 func discardTo(p *Player, m int) {
 	for len(p.Hand) > m {
 		d := selectDiscardOwn(p)
-		discardCard(p, d)
+		// discardCards(p, d)
+		discardCards(p, []cd.Card{d})
 	}
 }
 
@@ -565,4 +607,73 @@ func bestPlayableCard(cs []cd.Card) cd.Card {
 		}
 	}
 	return b
+}
+
+func InitializeSupply(pl int) cd.Supply {
+
+	var s cd.Supply
+
+	/* coin cards */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCopper(), Count: 60 - (pl * 7)})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSilver(), Count: 40})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGold(), Count: 30})
+
+	/* victory cards */
+	vc := 12
+	pc := vc
+	switch pl {
+	case 2:
+		vc = 8
+		pc = 8
+	case 5:
+		pc = 15
+	case 6:
+		pc = 18
+	}
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefEstate(), Count: vc})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefDuchy(), Count: vc})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefProvince(), Count: pc})
+
+	/* curses */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
+
+	/* kingdom */
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+
+	return s
+}
+
+func initializeRandomizer() []cd.Card {
+
+	var rd []cd.Card
+
+	/* kingdom */
+	rd = append(rd, bs.DefCellar())
+	rd = append(rd, bs.DefChapel())
+	rd = append(rd, bs.DefMoat())
+	rd = append(rd, bs.DefVillage())
+	rd = append(rd, bs.DefWoodcutter())
+	rd = append(rd, bs.DefHarbinger())
+	rd = append(rd, bs.DefSmithy())
+	rd = append(rd, bs.DefMilitia())
+	rd = append(rd, bs.DefGardens())
+	rd = append(rd, bs.DefFestival())
+	rd = append(rd, bs.DefLaboratory())
+	rd = append(rd, bs.DefMarket())
+	rd = append(rd, bs.DefWitch())
+
+	return rd
 }

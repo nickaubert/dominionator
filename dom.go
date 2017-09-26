@@ -1,5 +1,11 @@
 package main
 
+/***************************************
+   TODO:
+   Randomizer deck
+   Throne Room (make sure card doesnt duplicate)
+***************************************/
+
 import (
 	"fmt"
 )
@@ -14,7 +20,8 @@ func main() {
 	pg := pl.InitializePlaygroup(3)
 	for n := range pg.Players {
 		pl.ShuffleDeck(&pg.Players[n])
-		pl.Draw(&pg.Players[n], 5)
+		nc := pl.Draw(&pg.Players[n], 5)
+		pl.AddHand(&pg.Players[n], nc)
 	}
 
 	fmt.Println("starting supply:")
