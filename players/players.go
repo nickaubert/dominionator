@@ -76,20 +76,32 @@ func ActionPhase(pg *Playgroup) {
 
 	// play action cards as long as we can starting with non-terminals
 	for pg.ThisTurn.Actions > 0 {
-		nt, tm := findActionCards(p.Hand)
-		if len(nt) > 0 {
-			c := highestCostCard(nt)
-			playActionCard(pg, c)
-			showStatus(pg, c)
-			continue
+		/*
+			nt, tm := findActionCards(p.Hand)
+			if len(nt) > 0 {
+				c := highestCostCard(nt)
+				playActionCard(pg, c)
+				showStatus(pg, c)
+				continue
+			}
+			if len(tm) > 0 {
+				c := highestCostCard(tm)
+				playActionCard(pg, c)
+				showStatus(pg, c)
+				continue
+			}
+			break
+		*/
+		ac := findCards(p.Hand, "actionExtra")
+		if len(ac) == 0 {
+			ac = findCards(p.Hand, "action")
 		}
-		if len(tm) > 0 {
-			c := highestCostCard(tm)
-			playActionCard(pg, c)
-			showStatus(pg, c)
-			continue
+		if len(ac) == 0 {
+			break
 		}
-		break
+		c := highestCostCard(ac)
+		playActionCard(pg, c)
+		showStatus(pg, c)
 	}
 
 }
@@ -102,8 +114,8 @@ func BuyPhase(pg *Playgroup) {
 
 	for pg.ThisTurn.Buys > 0 {
 
-		// actual decisions about which cards to play will go here
-		tc := findTreasureCards(p.Hand)
+		// decision point about which cards to play will go here
+		tc := findCards(p.Hand, "treasure")
 		playTreasureCards(pg, tc)
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
@@ -255,6 +267,7 @@ func ShuffleCards(d *[]cd.Card) {
 }
 */
 
+/*
 func findTreasureCards(h []cd.Card) []cd.Card {
 	var tc []cd.Card
 	for _, c := range h {
@@ -265,7 +278,40 @@ func findTreasureCards(h []cd.Card) []cd.Card {
 	}
 	return tc
 }
+*/
 
+func findCards(h []cd.Card, t string) []cd.Card {
+	var cs []cd.Card
+	for _, c := range h {
+		switch t {
+		case "actionExtra":
+			if c.CTypes.Action == true {
+				if c.Effects.ExtraActions > 0 {
+					cs = append(cs, c)
+				}
+			}
+		case "action":
+			if c.CTypes.Action == true {
+				cs = append(cs, c)
+			}
+		case "treasure":
+			if c.CTypes.Treasure == true {
+				cs = append(cs, c)
+			}
+		case "victory":
+			if c.CTypes.Victory == true {
+				cs = append(cs, c)
+			}
+		case "curse":
+			if c.CTypes.Curse == true {
+				cs = append(cs, c)
+			}
+		}
+	}
+	return cs
+}
+
+/*
 func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
 	var nt []cd.Card
 	var tm []cd.Card
@@ -281,6 +327,7 @@ func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
 	}
 	return nt, tm
 }
+*/
 
 func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	var ac []cd.Card
@@ -615,7 +662,7 @@ func InitializeSupply(pl int) cd.Supply {
 
 	/* coin cards */
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCopper(), Count: 60 - (pl * 7)})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSilver(), Count: 40})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSilver(), Count: 40})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGold(), Count: 30})
 
 	/* victory cards */
@@ -641,9 +688,9 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
