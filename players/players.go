@@ -26,7 +26,7 @@ type Playgroup struct {
 	PlayerTurn int
 	ThisTurn   ThisTurn
 	Supply     cd.Supply
-	Trash      []cd.Card
+	Trash      Cards
 }
 
 type ThisTurn struct {
@@ -97,7 +97,7 @@ func BuyPhase(pg *Playgroup) {
 
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
-	showCards("hand", pg.Players[pg.PlayerTurn].Hand.Cards)
+	showCards("hand", pg.Players[pg.PlayerTurn].Hand)
 
 	for pg.ThisTurn.Buys > 0 {
 
@@ -295,29 +295,28 @@ func findCards(h []cd.Card, t string) []cd.Card {
 	return cs
 }
 
-// This doesn't work.  Cannot range over pointer to slice , so must
-// either pass pointer to encapsulating object, or return modified slice
-func getCard(stack *[]cd.Card, mc cd.Card) cd.Card {
-	st := *stack
-	showCards("st1  ", st)
+// Must either pass pointer to encapsulating object, or return modified slice
+func getCard(stack *Cards, mc cd.Card) cd.Card {
+	// st := *stack
+	// showCards("st1  ", *stack)
 	var fc cd.Card
-	for i, c := range st {
+	for i, c := range stack.Cards {
 		if c.Name == mc.Name {
-			st = append(st[:i], st[i+1:]...)
+			stack.Cards = append(stack.Cards[:i], stack.Cards[i+1:]...)
 			fc = mc
 			break
 		}
 	}
-	showCards("st2  ", st)
-	stack = &st
-	showCards("stack", *stack)
+	// showCards("st2  ", st)
+	// stack = &st
+	// showCards("stack", *stack)
 	if fc.Name != mc.Name {
-		panic(fmt.Sprintf("ERROR: missing card! %s %v", mc, *stack))
+		panic(fmt.Sprintf("ERROR: missing card! %s %v", mc, stack))
 	}
 	return fc
 }
 
-func getCards(stack *[]cd.Card, set []cd.Card) []cd.Card {
+func getCards(stack *Cards, set []cd.Card) []cd.Card {
 	var fc []cd.Card
 	for _, c := range set {
 		fc = append(fc, getCard(stack, c))
@@ -466,9 +465,9 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 	}
 }
 
-func showCards(s string, h []cd.Card) {
+func showCards(s string, h Cards) {
 	fmt.Print("\t\t", s, ": ")
-	for _, c := range h {
+	for _, c := range h.Cards {
 		fmt.Print(c.Name, ", ")
 	}
 	fmt.Print("\n")
@@ -482,11 +481,11 @@ func showStatus(pg *Playgroup) {
 
 func playActionCard(pg *Playgroup, c cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
-	showCards("hand1", p.Hand.Cards)
+	showCards("hand1", p.Hand)
 	fmt.Println("\t\t playing", c.Name)
 	pg.ThisTurn.Actions--
-	getCard(&p.Hand.Cards, c)
-	showCards("hand2", p.Hand.Cards)
+	getCard(&p.Hand, c)
+	showCards("hand2", p.Hand)
 	// playCard(&pg.Players[pg.PlayerTurn], c)
 	p.InPlay.Cards = append(p.InPlay.Cards, c)
 	resolveEffects(pg, c)
@@ -494,7 +493,7 @@ func playActionCard(pg *Playgroup, c cd.Card) {
 
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
-	mt := getCards(&p.Hand.Cards, tc)
+	mt := getCards(&p.Hand, tc)
 	for _, c := range mt {
 		// playCard(&pg.Players[pg.PlayerTurn], c)
 		p.InPlay.Cards = append(p.InPlay.Cards, c)
@@ -562,7 +561,7 @@ func removeFromDiscard(p *Player, c cd.Card) {
 func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
 	fmt.Println("\t\t\t trashing", c.Name)
 	removeFromHand(p, c)
-	pg.Trash = append(pg.Trash, c)
+	pg.Trash.Cards = append(pg.Trash.Cards, c)
 }
 
 func trashUpTo(p *Player, pg *Playgroup, t int) {
