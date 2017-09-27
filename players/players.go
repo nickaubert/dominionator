@@ -53,7 +53,6 @@ func PlayTurn(pg *Playgroup) bool {
 	pg.ThisTurn.Coins = 0
 
 	ActionPhase(pg)
-
 	BuyPhase(pg)
 	CleanupPhase(pg)
 
@@ -73,25 +72,7 @@ func ActionPhase(pg *Playgroup) {
 	fmt.Println("\t ActionPhase")
 
 	// decision which action cards to play will go here
-
-	// play action cards as long as we can starting with non-terminals
 	for pg.ThisTurn.Actions > 0 {
-		/*
-			nt, tm := findActionCards(p.Hand)
-			if len(nt) > 0 {
-				c := highestCostCard(nt)
-				playActionCard(pg, c)
-				showStatus(pg, c)
-				continue
-			}
-			if len(tm) > 0 {
-				c := highestCostCard(tm)
-				playActionCard(pg, c)
-				showStatus(pg, c)
-				continue
-			}
-			break
-		*/
 		ac := findCards(p.Hand, "actionExtra")
 		if len(ac) == 0 {
 			ac = findCards(p.Hand, "action")
@@ -99,9 +80,11 @@ func ActionPhase(pg *Playgroup) {
 		if len(ac) == 0 {
 			break
 		}
-		c := highestCostCard(ac)
-		playActionCard(pg, c)
-		showStatus(pg, c)
+		// c := highestCostCard(ac)
+		// pg.ThisTurn.Actions--
+		// playActionCard(pg, getCard(&p.Hand, highestCostCard(ac)))
+		playActionCard(pg, highestCostCard(ac))
+		showStatus(pg)
 	}
 
 }
@@ -267,19 +250,6 @@ func ShuffleCards(d *[]cd.Card) {
 }
 */
 
-/*
-func findTreasureCards(h []cd.Card) []cd.Card {
-	var tc []cd.Card
-	for _, c := range h {
-		if c.CTypes.Treasure == false {
-			continue
-		}
-		tc = append(tc, c)
-	}
-	return tc
-}
-*/
-
 func findCards(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
 	for _, c := range h {
@@ -321,23 +291,35 @@ func findCards(h []cd.Card, t string) []cd.Card {
 	return cs
 }
 
-/*
-func findActionCards(ac []cd.Card) ([]cd.Card, []cd.Card) {
-	var nt []cd.Card
-	var tm []cd.Card
-	for _, c := range ac {
-		if c.CTypes.Action == false {
-			continue
-		}
-		if c.Effects.ExtraActions > 0 {
-			nt = append(nt, c)
-		} else {
-			tm = append(tm, c)
+// This doesn't work.  Cannot range over pointer to slice , so must
+// either pass pointer to encapsulating object, or return modified slice
+func getCard(stack *[]cd.Card, mc cd.Card) cd.Card {
+	st := *stack
+	showCards("st1  ", st)
+	var fc cd.Card
+	for i, c := range st {
+		if c.Name == mc.Name {
+			st = append(st[:i], st[i+1:]...)
+			fc = mc
+			break
 		}
 	}
-	return nt, tm
+	showCards("st2  ", st)
+	stack = &st
+	showCards("stack", *stack)
+	if fc.Name != mc.Name {
+		panic(fmt.Sprintf("ERROR: missing card! %s %v", mc, *stack))
+	}
+	return fc
 }
-*/
+
+func getCards(stack *[]cd.Card, set []cd.Card) []cd.Card {
+	var fc []cd.Card
+	for _, c := range set {
+		fc = append(fc, getCard(stack, c))
+	}
+	return fc
+}
 
 func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	var ac []cd.Card
@@ -351,52 +333,6 @@ func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	}
 	return ac, na
 }
-
-/*
-func findVictoryCards(h []cd.Card) []cd.Card {
-	// finds victory cards that arent also treasure or action cards
-	var vc []cd.Card
-	for _, c := range h {
-		if c.CTypes.Victory == false {
-			continue
-		}
-		if c.CTypes.Treasure == true {
-			continue
-		}
-		if c.CTypes.Action == true {
-			continue
-		}
-		vc = append(vc, c)
-	}
-	return vc
-}
-*/
-
-/*
-func findCurses(h []cd.Card) []cd.Card {
-	var cc []cd.Card
-	for _, c := range h {
-		if c.CTypes.Curse == false {
-			continue
-		}
-		cc = append(cc, c)
-	}
-	return cc
-}
-*/
-
-/*
-func findReactions(h []cd.Card) []cd.Card {
-	var rc []cd.Card
-	for _, c := range h {
-		if c.CTypes.Reaction == false {
-			continue
-		}
-		rc = append(rc, c)
-	}
-	return rc
-}
-*/
 
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
@@ -442,13 +378,11 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
 			// decision point here
-			// vc := findVictoryCards(p.Hand)
 			vc := findCards(p.Hand, "nonUsable")
 			for j, v := range vc {
 				if j > s.CountDiscard {
 					break
 				}
-				// discardCard(p, v)
 				discardCards(p, []cd.Card{v})
 				countX++
 			}
@@ -459,7 +393,6 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		}
 		if s.CountTrash > 0 {
 			// decision point here
-			// cc := findCurses(p.Hand)
 			cc := findCards(p.Hand, "curse")
 			for j, u := range cc {
 				if j > s.CountTrash {
@@ -537,23 +470,30 @@ func showCards(s string, h []cd.Card) {
 	fmt.Print("\n")
 }
 
-func showStatus(pg *Playgroup, c cd.Card) {
+func showStatus(pg *Playgroup) {
 	fmt.Println("\t\t\t actions", pg.ThisTurn.Actions)
 	fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
 func playActionCard(pg *Playgroup, c cd.Card) {
-	showCards("hand", pg.Players[pg.PlayerTurn].Hand)
+	p := &pg.Players[pg.PlayerTurn]
+	showCards("hand1", p.Hand)
 	fmt.Println("\t\t playing", c.Name)
 	pg.ThisTurn.Actions--
-	playCard(&pg.Players[pg.PlayerTurn], c)
+	getCard(&p.Hand, c)
+	showCards("hand2", p.Hand)
+	// playCard(&pg.Players[pg.PlayerTurn], c)
+	p.InPlay = append(p.InPlay, c)
 	resolveEffects(pg, c)
 }
 
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
-	for _, c := range tc {
-		playCard(&pg.Players[pg.PlayerTurn], c)
+	p := &pg.Players[pg.PlayerTurn]
+	mt := getCards(&p.Hand, tc)
+	for _, c := range mt {
+		// playCard(&pg.Players[pg.PlayerTurn], c)
+		p.InPlay = append(p.InPlay, c)
 		pg.ThisTurn.Coins += c.Coins
 	}
 }
@@ -575,7 +515,6 @@ func discardCards(p *Player, cs []cd.Card) {
 
 func selectDiscardOwn(p *Player) cd.Card {
 	// discard victory cards first, then select lowest value
-	// vc := findVictoryCards(p.Hand)
 	vc := findCards(p.Hand, "nonUsable")
 	for _, c := range vc {
 		return c
@@ -625,7 +564,6 @@ func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
 func trashUpTo(p *Player, pg *Playgroup, t int) {
 	for i := 0; i < t; i++ {
 		// decision point here
-		// cc := findCurses(p.Hand)
 		cc := findCards(p.Hand, "curse")
 		if len(cc) > 0 {
 			removeFromHand(p, cc[0])
@@ -636,7 +574,6 @@ func trashUpTo(p *Player, pg *Playgroup, t int) {
 
 func checkReactions(p *Player) bool {
 	defended := false
-	// rc := findReactions(p.Hand)
 	rc := findCards(p.Hand, "reaction")
 	for _, c := range rc {
 		// decision point here

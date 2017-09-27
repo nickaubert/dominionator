@@ -2,6 +2,7 @@ package main
 
 /***************************************
    TODO:
+    Unit tests!
    Randomizer deck
    Throne Room (make sure card doesnt duplicate)
 ***************************************/
