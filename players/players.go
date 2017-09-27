@@ -284,14 +284,12 @@ func findCards(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
 	for _, c := range h {
 		switch t {
-		case "actionExtra":
-			if c.CTypes.Action == true {
-				if c.Effects.ExtraActions > 0 {
-					cs = append(cs, c)
-				}
-			}
 		case "action":
 			if c.CTypes.Action == true {
+				cs = append(cs, c)
+			}
+		case "reaction":
+			if c.CTypes.Reaction == true {
 				cs = append(cs, c)
 			}
 		case "treasure":
@@ -305,6 +303,18 @@ func findCards(h []cd.Card, t string) []cd.Card {
 		case "curse":
 			if c.CTypes.Curse == true {
 				cs = append(cs, c)
+			}
+		case "actionExtra":
+			if c.CTypes.Action == true {
+				if c.Effects.ExtraActions > 0 {
+					cs = append(cs, c)
+				}
+			}
+		case "nonUsable":
+			if c.CTypes.Action == false {
+				if c.CTypes.Treasure == false {
+					cs = append(cs, c)
+				}
 			}
 		}
 	}
@@ -342,6 +352,7 @@ func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	return ac, na
 }
 
+/*
 func findVictoryCards(h []cd.Card) []cd.Card {
 	// finds victory cards that arent also treasure or action cards
 	var vc []cd.Card
@@ -359,7 +370,9 @@ func findVictoryCards(h []cd.Card) []cd.Card {
 	}
 	return vc
 }
+*/
 
+/*
 func findCurses(h []cd.Card) []cd.Card {
 	var cc []cd.Card
 	for _, c := range h {
@@ -370,7 +383,9 @@ func findCurses(h []cd.Card) []cd.Card {
 	}
 	return cc
 }
+*/
 
+/*
 func findReactions(h []cd.Card) []cd.Card {
 	var rc []cd.Card
 	for _, c := range h {
@@ -381,6 +396,7 @@ func findReactions(h []cd.Card) []cd.Card {
 	}
 	return rc
 }
+*/
 
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
@@ -426,7 +442,8 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
 			// decision point here
-			vc := findVictoryCards(p.Hand)
+			// vc := findVictoryCards(p.Hand)
+			vc := findCards(p.Hand, "nonUsable")
 			for j, v := range vc {
 				if j > s.CountDiscard {
 					break
@@ -442,7 +459,8 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		}
 		if s.CountTrash > 0 {
 			// decision point here
-			cc := findCurses(p.Hand)
+			// cc := findCurses(p.Hand)
+			cc := findCards(p.Hand, "curse")
 			for j, u := range cc {
 				if j > s.CountTrash {
 					break
@@ -557,7 +575,8 @@ func discardCards(p *Player, cs []cd.Card) {
 
 func selectDiscardOwn(p *Player) cd.Card {
 	// discard victory cards first, then select lowest value
-	vc := findVictoryCards(p.Hand)
+	// vc := findVictoryCards(p.Hand)
+	vc := findCards(p.Hand, "nonUsable")
 	for _, c := range vc {
 		return c
 	}
@@ -606,7 +625,8 @@ func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
 func trashUpTo(p *Player, pg *Playgroup, t int) {
 	for i := 0; i < t; i++ {
 		// decision point here
-		cc := findCurses(p.Hand)
+		// cc := findCurses(p.Hand)
+		cc := findCards(p.Hand, "curse")
 		if len(cc) > 0 {
 			removeFromHand(p, cc[0])
 			trashFromHand(p, pg, cc[0])
@@ -616,7 +636,8 @@ func trashUpTo(p *Player, pg *Playgroup, t int) {
 
 func checkReactions(p *Player) bool {
 	defended := false
-	rc := findReactions(p.Hand)
+	// rc := findReactions(p.Hand)
+	rc := findCards(p.Hand, "reaction")
 	for _, c := range rc {
 		// decision point here
 		if c.Reactions.Defend == true {
