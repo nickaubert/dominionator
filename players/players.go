@@ -84,10 +84,13 @@ func ActionPhase(pg *Playgroup) {
 		if len(ac) == 0 {
 			break
 		}
-		// c := highestCostCard(ac)
-		// pg.ThisTurn.Actions--
-		// playActionCard(pg, getCard(&p., highestCostCard(ac)))
-		playActionCard(pg, highestCostCard(ac))
+		// playActionCard(pg, highestCostCard(ac))
+		showCards("hand1", p.Hand)
+		c := getCard(&p.Hand, highestCostCard(ac))
+		fmt.Println("\t\t playing", c.Name)
+		pg.ThisTurn.Actions--
+		p.InPlay.Cards = append(p.InPlay.Cards, c)
+		resolveEffects(pg, c)
 		showStatus(pg)
 	}
 
@@ -479,6 +482,7 @@ func showStatus(pg *Playgroup) {
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
+/*
 func playActionCard(pg *Playgroup, c cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
 	showCards("hand1", p.Hand)
@@ -490,6 +494,7 @@ func playActionCard(pg *Playgroup, c cd.Card) {
 	p.InPlay.Cards = append(p.InPlay.Cards, c)
 	resolveEffects(pg, c)
 }
+*/
 
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
@@ -501,10 +506,12 @@ func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 	}
 }
 
+/*
 func playCard(p *Player, c cd.Card) {
 	removeFromHand(p, c)
 	p.InPlay.Cards = append(p.InPlay.Cards, c)
 }
+*/
 
 func discardCards(p *Player, cs []cd.Card) {
 	fmt.Print("\t\t\t discarding ")
