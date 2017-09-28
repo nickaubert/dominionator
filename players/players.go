@@ -104,8 +104,15 @@ func BuyPhase(pg *Playgroup) {
 	for pg.ThisTurn.Buys > 0 {
 
 		// decision point about which cards to play will go here
-		tc := findCards(p.Hand.Cards, "treasure")
-		playTreasureCards(pg, tc)
+		// usually all treasure cards will be activated on fist buy phase
+		// tc := findCards(p.Hand.Cards, "treasure")
+		// playTreasureCards(pg, tc)
+		tc := getCards(&p.Hand, findCards(p.Hand.Cards, "treasure"))
+		for _, c := range tc {
+			p.InPlay.Cards = append(p.InPlay.Cards, c)
+			resolveEffects(pg, c)
+			pg.ThisTurn.Coins += c.Coins
+		}
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
@@ -161,6 +168,9 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 		}
 		if p.Card.Cost > o {
 			continue
+		}
+		if p.Card.CTypes.Curse == true {
+			continue // decision point, yeah dont buy curses
 		}
 		if p.Card.Cost > highestCost {
 			highestCost = p.Card.Cost
@@ -503,6 +513,7 @@ func showStatus(pg *Playgroup) {
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
+/*
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
 	mt := getCards(&p.Hand, tc)
@@ -512,6 +523,7 @@ func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 		pg.ThisTurn.Coins += c.Coins
 	}
 }
+*/
 
 func discardCards(p *Player, cs []cd.Card) {
 	fmt.Print("\t\t\t discarding ")
