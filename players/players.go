@@ -84,8 +84,7 @@ func ActionPhase(pg *Playgroup) {
 		if len(ac) == 0 {
 			break
 		}
-		// playActionCard(pg, highestCostCard(ac))
-		showCards("hand1", p.Hand)
+		showCards("hand", p.Hand)
 		c := getCard(&p.Hand, highestCostCard(ac))
 		fmt.Println("\t\t playing", c.Name)
 		pg.ThisTurn.Actions--
@@ -153,20 +152,34 @@ func AddHand(p *Player, nc []cd.Card) {
 }
 
 func SelectCardBuy(o int, s cd.Supply) cd.Card {
+	// decision point here
 	// this is not the best heuristic
-	var bestCard cd.Card
-	for _, c := range s.Piles {
-		if c.Count == 0 {
+	var highestCost int
+	for _, p := range s.Piles {
+		if p.Count == 0 {
 			continue
 		}
-		if c.Card.Cost > o {
+		if p.Card.Cost > o {
 			continue
 		}
-		if c.Card.Cost > bestCard.Cost {
-			bestCard = c.Card
+		if p.Card.Cost > highestCost {
+			highestCost = p.Card.Cost
 		}
 	}
-	return bestCard
+	var bestCards []cd.Card
+	for _, p := range s.Piles {
+		if p.Count == 0 {
+			continue
+		}
+		if p.Card.Cost != highestCost {
+			continue
+		}
+		bestCards = append(bestCards, p.Card)
+	}
+	rand.Seed(time.Now().UnixNano())
+	r := rand.Intn(len(bestCards))
+	c := bestCards[r]
+	return c
 }
 
 func gainCard(p *Player, s *cd.Supply, c cd.Card) {
@@ -384,6 +397,7 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
 			// decision point here
+			fmt.Println("\t\t\t\t CountDiscard")
 			vc := findCards(p.Hand.Cards, "nonUsable")
 			for j, v := range vc {
 				if j > s.CountDiscard {
@@ -394,11 +408,13 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 		}
 		if s.DrawCount == true {
+			fmt.Println("\t\t\t\t DrawCount")
 			nc := Draw(p, countX)
 			AddHand(p, nc)
 		}
 		if s.CountTrash > 0 {
 			// decision point here
+			fmt.Println("\t\t\t\t CountTrash")
 			cc := findCards(p.Hand.Cards, "curse")
 			for j, u := range cc {
 				if j > s.CountTrash {
@@ -410,6 +426,7 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 		}
 		if s.RetrieveDiscard > 0 {
+			fmt.Println("\t\t\t\t RetrieveDiscard")
 			for j := 0; j < s.RetrieveDiscard; j++ {
 				// decision point here
 				bc := bestPlayableCard(p.Discard.Cards)
@@ -421,21 +438,25 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 		}
 		if s.PlaceDeck == true {
+			fmt.Println("\t\t\t\t PlaceDeck")
 			addDeckTop(p, cardSet)
 		}
 		if s.DrawDeck > 0 {
+			fmt.Println("\t\t\t\t DrawDeck")
 			// fmt.Println("seq draw", s.DrawDeck)
 			cardSet = append(cardSet, Draw(p, s.DrawDeck)...)
 			// showCards("hand", p.Hand.Cards)
 			// showCards("cardSet", cardSet)
 		}
 		if s.DiscardNonAction == true {
+			fmt.Println("\t\t\t\t DiscardNonAction")
 			ac, na := siftActionCards(cardSet)
 			// fmt.Println("seq keep", len(ac), "discard", len(na))
 			discardCards(p, na)
 			cardSet = ac
 		}
 		if s.PlayAction > 0 {
+			fmt.Println("\t\t\t\t PlayAction")
 			// possible decision point here whether to play any action
 			for _, c := range cardSet {
 				fmt.Println("\t\t\t seq play action", c.Name)
@@ -482,20 +503,6 @@ func showStatus(pg *Playgroup) {
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
 
-/*
-func playActionCard(pg *Playgroup, c cd.Card) {
-	p := &pg.Players[pg.PlayerTurn]
-	showCards("hand1", p.Hand)
-	fmt.Println("\t\t playing", c.Name)
-	pg.ThisTurn.Actions--
-	getCard(&p.Hand, c)
-	showCards("hand2", p.Hand)
-	// playCard(&pg.Players[pg.PlayerTurn], c)
-	p.InPlay.Cards = append(p.InPlay.Cards, c)
-	resolveEffects(pg, c)
-}
-*/
-
 func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 	p := &pg.Players[pg.PlayerTurn]
 	mt := getCards(&p.Hand, tc)
@@ -505,13 +512,6 @@ func playTreasureCards(pg *Playgroup, tc []cd.Card) {
 		pg.ThisTurn.Coins += c.Coins
 	}
 }
-
-/*
-func playCard(p *Player, c cd.Card) {
-	removeFromHand(p, c)
-	p.InPlay.Cards = append(p.InPlay.Cards, c)
-}
-*/
 
 func discardCards(p *Player, cs []cd.Card) {
 	fmt.Print("\t\t\t discarding ")
