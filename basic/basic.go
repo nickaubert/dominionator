@@ -147,6 +147,17 @@ func DefVassal() cd.Card {
 	return c
 }
 
+func DefWorkshop() cd.Card {
+	var c cd.Card
+	c.Name = "Workshop"
+	c.Cost = 3
+	c.CTypes.Action = true
+	var s1 cd.Sequence
+	s1.GainMax = 4
+	c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	return c
+}
+
 func DefSmithy() cd.Card {
 	var c cd.Card
 	c.Name = "Smithy"

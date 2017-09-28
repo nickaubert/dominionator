@@ -114,8 +114,8 @@ func BuyPhase(pg *Playgroup) {
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
-		if c.Name == "nil" {
-			continue
+		if c.Name == "" {
+			break
 		}
 		fmt.Println("\t\t buying", c.Name)
 		gainCard(p, &pg.Supply, c)
@@ -189,7 +189,7 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 		bestCards = append(bestCards, p.Card)
 	}
 	if len(bestCards) == 0 {
-		return cd.Card{Name: "nil"}
+		return cd.Card{}
 	}
 	rand.Seed(time.Now().UnixNano())
 	r := rand.Intn(len(bestCards))
@@ -485,6 +485,13 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 				}
 			}
 		}
+		if s.GainMax > 0 {
+			c := SelectCardBuy(s.GainMax, pg.Supply)
+			if c.Name != "" {
+				gainCard(p, &pg.Supply, c)
+			}
+			fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
+		}
 	}
 }
 
@@ -669,6 +676,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})

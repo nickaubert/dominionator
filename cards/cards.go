@@ -42,6 +42,7 @@ type Sequence struct {
 	RetrieveDiscard  int  // max cards to pull from discard
 	DrawDeck         int  // max cards to draw from deck
 	PlayAction       int  // play action this many times
+	GainMax          int  // gain card up to this cost
 	DiscardNonAction bool // discard non-action cards from set
 	DrawCount        bool // Draw "X" cards
 	PlaceDeck        bool // Place cards onto deck
