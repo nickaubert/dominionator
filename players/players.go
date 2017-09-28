@@ -105,8 +105,6 @@ func BuyPhase(pg *Playgroup) {
 
 		// decision point about which cards to play will go here
 		// usually all treasure cards will be activated on fist buy phase
-		// tc := findCards(p.Hand.Cards, "treasure")
-		// playTreasureCards(pg, tc)
 		tc := getCards(&p.Hand, findCards(p.Hand.Cards, "treasure"))
 		for _, c := range tc {
 			p.InPlay.Cards = append(p.InPlay.Cards, c)
@@ -116,8 +114,12 @@ func BuyPhase(pg *Playgroup) {
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
+		if c.Name == "nil" {
+			continue
+		}
 		fmt.Println("\t\t buying", c.Name)
 		gainCard(p, &pg.Supply, c)
+		pg.ThisTurn.Coins -= c.Cost
 		pg.ThisTurn.Buys--
 
 	}
@@ -128,9 +130,9 @@ func CleanupPhase(pg *Playgroup) {
 	fmt.Println("\t CleanupPhase")
 	p := pg.Players[pg.PlayerTurn]
 	p.Discard.Cards = append(p.Discard.Cards, p.InPlay.Cards...)
+	p.InPlay.Cards = p.InPlay.Cards[:0]
 	p.Discard.Cards = append(p.Discard.Cards, p.Hand.Cards...)
 	p.Hand.Cards = p.Hand.Cards[:0]
-	p.InPlay.Cards = p.InPlay.Cards[:0]
 	nc := Draw(&p, 5)
 	AddHand(&p, nc)
 	pg.Players[pg.PlayerTurn] = p
@@ -185,6 +187,9 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 			continue
 		}
 		bestCards = append(bestCards, p.Card)
+	}
+	if len(bestCards) == 0 {
+		return cd.Card{Name: "nil"}
 	}
 	rand.Seed(time.Now().UnixNano())
 	r := rand.Intn(len(bestCards))
@@ -391,8 +396,12 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
-	nc := Draw(&pg.Players[pg.PlayerTurn], c.Effects.DrawCard)
-	AddHand(&pg.Players[pg.PlayerTurn], nc)
+	if c.Effects.DrawCard > 0 {
+		p := &pg.Players[pg.PlayerTurn]
+		nc := Draw(p, c.Effects.DrawCard)
+		p.Hand.Cards = append(p.Hand.Cards, nc...)
+	}
+	// AddHand(&pg.Players[pg.PlayerTurn], nc)
 	if c.CTypes.Attack == true {
 		resolveAttacks(pg, c)
 	}
@@ -512,18 +521,6 @@ func showStatus(pg *Playgroup) {
 	fmt.Println("\t\t\t buys", pg.ThisTurn.Buys)
 	fmt.Println("\t\t\t coins", pg.ThisTurn.Coins)
 }
-
-/*
-func playTreasureCards(pg *Playgroup, tc []cd.Card) {
-	p := &pg.Players[pg.PlayerTurn]
-	mt := getCards(&p.Hand, tc)
-	for _, c := range mt {
-		// playCard(&pg.Players[pg.PlayerTurn], c)
-		p.InPlay.Cards = append(p.InPlay.Cards, c)
-		pg.ThisTurn.Coins += c.Coins
-	}
-}
-*/
 
 func discardCards(p *Player, cs []cd.Card) {
 	fmt.Print("\t\t\t discarding ")
