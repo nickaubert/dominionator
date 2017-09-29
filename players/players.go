@@ -77,9 +77,9 @@ func ActionPhase(pg *Playgroup) {
 
 	// decision which action cards to play will go here
 	for pg.ThisTurn.Actions > 0 {
-		ac := findCards(p.Hand.Cards, "actionExtra")
+		ac := findCardType(p.Hand.Cards, "actionExtra")
 		if len(ac) == 0 {
-			ac = findCards(p.Hand.Cards, "action")
+			ac = findCardType(p.Hand.Cards, "action")
 		}
 		if len(ac) == 0 {
 			break
@@ -105,7 +105,7 @@ func BuyPhase(pg *Playgroup) {
 
 		// decision point about which cards to play will go here
 		// usually all treasure cards will be activated on fist buy phase
-		tc := getCards(&p.Hand, findCards(p.Hand.Cards, "treasure"))
+		tc := getCards(&p.Hand, findCardType(p.Hand.Cards, "treasure"))
 		for _, c := range tc {
 			p.InPlay.Cards = append(p.InPlay.Cards, c)
 			resolveEffects(pg, c)
@@ -298,7 +298,7 @@ func ShuffleCards(d *[]cd.Card) {
 }
 */
 
-func findCards(h []cd.Card, t string) []cd.Card {
+func findCardType(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
 	for _, c := range h {
 		switch t {
@@ -337,6 +337,21 @@ func findCards(h []cd.Card, t string) []cd.Card {
 		}
 	}
 	return cs
+}
+
+func findCard(h []cd.Card, mc cd.Card, m int) []cd.Card {
+	var fc []cd.Card
+	f := 0
+	for _, c := range h {
+		if c.Name == mc.Name {
+			fc = append(fc, c)
+			f++
+			if f >= m {
+				break
+			}
+		}
+	}
+	return fc
 }
 
 // Must either pass pointer to encapsulating object, or return modified slice
@@ -424,7 +439,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.CountDiscard > 0 {
 			// decision point here
 			fmt.Println("\t\t\t\t CountDiscard")
-			vc := findCards(p.Hand.Cards, "nonUsable")
+			vc := findCardType(p.Hand.Cards, "nonUsable")
 			for j, v := range vc {
 				if j > s.CountDiscard {
 					break
@@ -441,7 +456,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.CountTrash > 0 {
 			// decision point here
 			fmt.Println("\t\t\t\t CountTrash")
-			cc := findCards(p.Hand.Cards, "curse")
+			cc := findCardType(p.Hand.Cards, "curse")
 			for j, u := range cc {
 				if j > s.CountTrash {
 					break
@@ -505,10 +520,24 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.GetHandType != "" {
 			fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
-			vc := findCards(p.Hand.Cards, s.GetHandType)
+			vc := findCardType(p.Hand.Cards, s.GetHandType)
 			if len(vc) > 0 {
 				cardSet = append(cardSet, vc[0])
 			}
+		}
+		if s.MayTrash.Name != "" {
+			fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
+			// decision point whether to trash here
+			cs := findCard(p.Hand.Cards, s.MayTrash, 1)
+			if len(cs) > 0 {
+				c := getCard(&p.Hand, s.MayTrash)
+				pg.Trash.Cards = append(pg.Trash.Cards, c)
+				cardSet = append(cardSet, c)
+			}
+		}
+		if s.AddXCoins > 0 {
+			fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
+			pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
 		}
 	}
 }
@@ -562,7 +591,7 @@ func discardCards(p *Player, cs []cd.Card) {
 
 func selectDiscardOwn(p *Player) cd.Card {
 	// discard victory cards first, then select lowest value
-	vc := findCards(p.Hand.Cards, "nonUsable")
+	vc := findCardType(p.Hand.Cards, "nonUsable")
 	for _, c := range vc {
 		return c
 	}
@@ -611,7 +640,7 @@ func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
 func trashUpTo(p *Player, pg *Playgroup, t int) {
 	for i := 0; i < t; i++ {
 		// decision point here
-		cc := findCards(p.Hand.Cards, "curse")
+		cc := findCardType(p.Hand.Cards, "curse")
 		if len(cc) > 0 {
 			removeFromHand(p, cc[0])
 			trashFromHand(p, pg, cc[0])
@@ -621,7 +650,7 @@ func trashUpTo(p *Player, pg *Playgroup, t int) {
 
 func checkReactions(p *Player) bool {
 	defended := false
-	rc := findCards(p.Hand.Cards, "reaction")
+	rc := findCardType(p.Hand.Cards, "reaction")
 	for _, c := range rc {
 		// decision point here
 		if c.Reactions.Defend == true {
@@ -738,6 +767,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})

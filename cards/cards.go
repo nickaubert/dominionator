@@ -44,7 +44,9 @@ type Sequence struct {
 	PlayAction       int    // play action this many times
 	GainMax          int    // gain card up to this cost
 	GetSupplyCard    Card   // get this card from supply
+	MayTrash         Card   // may trash this card from hand
 	GetHandType      string // get any of this card type from hand
+	AddXCoins        int    // add "X" * int coins
 	DiscardNonAction bool   // discard non-action cards from set
 	DrawCount        bool   // Draw "X" cards
 	PlaceDeck        bool   // Place cards onto deck

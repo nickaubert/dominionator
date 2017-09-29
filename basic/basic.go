@@ -70,9 +70,6 @@ func DefChapel() cd.Card {
 	c.Name = "Chapel"
 	c.Cost = 2
 	c.CTypes.Action = true
-	// var s1 cd.Sequence
-	// s1.CountTrash = 4
-	// c.Effects.Sequence = append(c.Effects.Sequence, s1)
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountTrash: 4})
 	return c
 }
@@ -116,14 +113,6 @@ func DefHarbinger() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
 	c.Effects.ExtraActions = 1
-	/*
-		var s1 cd.Sequence
-		s1.RetrieveDiscard = 1
-		c.Effects.Sequence = append(c.Effects.Sequence, s1)
-		var s2 cd.Sequence
-		s2.PlaceDeck = true
-		c.Effects.Sequence = append(c.Effects.Sequence, s2)
-	*/
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: 1})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
 	return c
@@ -135,16 +124,21 @@ func DefVassal() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.ExtraCoins = 2
-	var s1 cd.Sequence
-	s1.DrawDeck = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, s1)
-	var s2 cd.Sequence
-	s2.DiscardNonAction = true
-	c.Effects.Sequence = append(c.Effects.Sequence, s2)
-	// need decision point here whether to play action
-	var s3 cd.Sequence
-	s3.PlayAction = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, s3)
+	/*
+		var s1 cd.Sequence
+		s1.DrawDeck = 1
+		c.Effects.Sequence = append(c.Effects.Sequence, s1)
+		var s2 cd.Sequence
+		s2.DiscardNonAction = true
+		c.Effects.Sequence = append(c.Effects.Sequence, s2)
+		var s3 cd.Sequence
+		s3.PlayAction = 1
+		c.Effects.Sequence = append(c.Effects.Sequence, s3)
+	*/
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonAction: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: 1})
+
 	return c
 }
 
@@ -153,9 +147,10 @@ func DefWorkshop() cd.Card {
 	c.Name = "Workshop"
 	c.Cost = 3
 	c.CTypes.Action = true
-	var s1 cd.Sequence
-	s1.GainMax = 4
-	c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	// var s1 cd.Sequence
+	// s1.GainMax = 4
+	// c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainMax: 4})
 	return c
 }
 
@@ -229,8 +224,19 @@ func DefBureaucrat() cd.Card {
 	c.CTypes.Attack = true
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: DefSilver()})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "victory"}) // any victory card
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "victory"})
+	// or reveals a hand with no victory cards...
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: true})
+	return c
+}
+
+func DefMoneylender() cd.Card {
+	var c cd.Card
+	c.Name = "Moneylender"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{MayTrash: DefCopper()})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: 3})
 	return c
 }
 
