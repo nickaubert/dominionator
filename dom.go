@@ -20,9 +20,11 @@ func main() {
 
 	pg := pl.InitializePlaygroup(3)
 	for n := range pg.Players {
-		pl.ShuffleDeck(&pg.Players[n])
-		nc := pl.Draw(&pg.Players[n], 5)
-		pl.AddHand(&pg.Players[n], nc)
+		p := &pg.Players[n]
+		pl.ShuffleDeck(p)
+		nc := pl.Draw(p, 5)
+		// pl.AddHand(&pg.Players[n], nc)
+		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 
 	fmt.Println("starting supply:")

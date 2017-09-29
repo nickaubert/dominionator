@@ -99,7 +99,7 @@ func BuyPhase(pg *Playgroup) {
 
 	p := &pg.Players[pg.PlayerTurn]
 	fmt.Println("\t BuyPhase")
-	showCards("hand", pg.Players[pg.PlayerTurn].Hand)
+	showCards("hand", p.Hand)
 
 	for pg.ThisTurn.Buys > 0 {
 
@@ -118,7 +118,11 @@ func BuyPhase(pg *Playgroup) {
 			break
 		}
 		fmt.Println("\t\t buying", c.Name)
-		gainCard(p, &pg.Supply, c)
+		c = gainCard(&pg.Supply, c)
+		if c.Name == "" {
+			panic(fmt.Sprintf("ERROR: missing gain card! %s %v", c, pg.Supply))
+		}
+		p.Discard.Cards = append(p.Discard.Cards, c)
 		pg.ThisTurn.Coins -= c.Cost
 		pg.ThisTurn.Buys--
 
@@ -128,14 +132,15 @@ func BuyPhase(pg *Playgroup) {
 
 func CleanupPhase(pg *Playgroup) {
 	fmt.Println("\t CleanupPhase")
-	p := pg.Players[pg.PlayerTurn]
+	p := &pg.Players[pg.PlayerTurn]
 	p.Discard.Cards = append(p.Discard.Cards, p.InPlay.Cards...)
 	p.InPlay.Cards = p.InPlay.Cards[:0]
 	p.Discard.Cards = append(p.Discard.Cards, p.Hand.Cards...)
 	p.Hand.Cards = p.Hand.Cards[:0]
-	nc := Draw(&p, 5)
-	AddHand(&p, nc)
-	pg.Players[pg.PlayerTurn] = p
+	nc := Draw(p, 5)
+	// AddHand(p, nc)
+	p.Hand.Cards = append(p.Hand.Cards, nc...)
+	// pg.Players[pg.PlayerTurn] = p
 }
 
 func Draw(p *Player, d int) []cd.Card {
@@ -154,39 +159,41 @@ func Draw(p *Player, d int) []cd.Card {
 	return nc
 }
 
+/*
 func AddHand(p *Player, nc []cd.Card) {
 	if len(nc) > 0 {
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 }
+*/
 
 func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	// decision point here
 	// this is not the best heuristic
 	var highestCost int
-	for _, p := range s.Piles {
-		if p.Count == 0 {
+	for _, l := range s.Piles {
+		if l.Count == 0 {
 			continue
 		}
-		if p.Card.Cost > o {
+		if l.Card.Cost > o {
 			continue
 		}
-		if p.Card.CTypes.Curse == true {
-			continue // decision point, yeah dont buy curses
-		}
-		if p.Card.Cost > highestCost {
-			highestCost = p.Card.Cost
+		if l.Card.Cost > highestCost {
+			highestCost = l.Card.Cost
 		}
 	}
 	var bestCards []cd.Card
-	for _, p := range s.Piles {
-		if p.Count == 0 {
+	for _, l := range s.Piles {
+		if l.Count == 0 {
 			continue
 		}
-		if p.Card.Cost != highestCost {
+		if l.Card.Cost != highestCost {
 			continue
 		}
-		bestCards = append(bestCards, p.Card)
+		if l.Card.CTypes.Curse == true {
+			continue // decision point, yeah dont buy curses
+		}
+		bestCards = append(bestCards, l.Card)
 	}
 	if len(bestCards) == 0 {
 		return cd.Card{}
@@ -197,18 +204,21 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	return c
 }
 
-func gainCard(p *Player, s *cd.Supply, c cd.Card) {
+func gainCard(s *cd.Supply, c cd.Card) cd.Card {
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
 			if s.Piles[n].Count == 0 {
-				return
+				return cd.Card{}
 			}
 			s.Piles[n].Count--
-			p.Discard.Cards = append(p.Discard.Cards, c)
+			return c
+			// p.Discard.Cards = append(p.Discard.Cards, c)
 		}
 	}
+	return cd.Card{}
 }
 
+/*
 func getSupplyCard(p *Player, s *cd.Supply, c cd.Card) cd.Card {
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
@@ -221,6 +231,7 @@ func getSupplyCard(p *Player, s *cd.Supply, c cd.Card) cd.Card {
 	}
 	return cd.Card{}
 }
+*/
 
 func CheckEnd(s cd.Supply) bool {
 	emptyPiles := 0
@@ -451,7 +462,8 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.DrawCount == true {
 			fmt.Println("\t\t\t\t DrawCount")
 			nc := Draw(p, countX)
-			AddHand(p, nc)
+			// AddHand(p, nc)
+			p.Hand.Cards = append(p.Hand.Cards, nc...)
 		}
 		if s.CountTrash > 0 {
 			// decision point here
@@ -509,14 +521,26 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.GainMax > 0 {
 			c := SelectCardBuy(s.GainMax, pg.Supply)
-			if c.Name != "" {
-				gainCard(p, &pg.Supply, c)
+			if c.Name == "" {
+				fmt.Println("\t\t\t\t GainMax", s.GainMax, "no card to match")
+				continue
 			}
+			c = gainCard(&pg.Supply, c)
+			if c.Name == "" {
+				panic(fmt.Sprintf("ERROR: missing gainmax card! %s %v", c, pg.Supply))
+			}
+			p.Discard.Cards = append(p.Discard.Cards, c)
 			fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
 		}
 		if s.GetSupplyCard.Name != "" {
 			fmt.Println("\t\t\t\t GetCard", s.GetSupplyCard.Name)
-			cardSet = append(cardSet, getSupplyCard(p, &pg.Supply, s.GetSupplyCard))
+			// cardSet = append(cardSet, gainCard(p, &pg.Supply, s.GetSupplyCard))
+			c := gainCard(&pg.Supply, s.GetSupplyCard)
+			if c.Name == "" {
+				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard.Name, "no card to match")
+				continue
+			}
+			cardSet = append(cardSet, c)
 		}
 		if s.GetHandType != "" {
 			fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
@@ -609,7 +633,8 @@ func discardTo(p *Player, m int) {
 
 func gainCurse(p *Player, s *cd.Supply, m int) {
 	for i := 0; i < m; i++ {
-		gainCard(p, s, bs.DefCurse())
+		c := gainCard(s, bs.DefCurse())
+		p.Discard.Cards = append(p.Discard.Cards, c)
 	}
 }
 
@@ -690,6 +715,7 @@ func bestPlayableCard(cs []cd.Card) cd.Card {
 	return b
 }
 
+/*
 func findType(ct cd.Card, h []cd.Card) []cd.Card {
 	var mc []cd.Card
 	for _, c := range h {
@@ -726,6 +752,7 @@ func findType(ct cd.Card, h []cd.Card) []cd.Card {
 	}
 	return mc
 }
+*/
 
 func InitializeSupply(pl int) cd.Supply {
 

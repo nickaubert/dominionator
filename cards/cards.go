@@ -28,7 +28,6 @@ type Effect struct {
 	ExtraBuys    int
 	ExtraCoins   int
 	Sequence     []Sequence
-	// TrashUpTo    int // move to sequence?
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
