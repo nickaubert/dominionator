@@ -209,6 +209,19 @@ func gainCard(p *Player, s *cd.Supply, c cd.Card) {
 	}
 }
 
+func getSupplyCard(p *Player, s *cd.Supply, c cd.Card) cd.Card {
+	for n, pl := range s.Piles {
+		if pl.Card.Name == c.Name {
+			if s.Piles[n].Count == 0 {
+				return cd.Card{}
+			}
+			s.Piles[n].Count--
+			return c
+		}
+	}
+	return cd.Card{}
+}
+
 func CheckEnd(s cd.Supply) bool {
 	emptyPiles := 0
 	for _, pl := range s.Piles {
@@ -328,8 +341,6 @@ func findCards(h []cd.Card, t string) []cd.Card {
 
 // Must either pass pointer to encapsulating object, or return modified slice
 func getCard(stack *Cards, mc cd.Card) cd.Card {
-	// st := *stack
-	// showCards("st1  ", *stack)
 	var fc cd.Card
 	for i, c := range stack.Cards {
 		if c.Name == mc.Name {
@@ -338,9 +349,6 @@ func getCard(stack *Cards, mc cd.Card) cd.Card {
 			break
 		}
 	}
-	// showCards("st2  ", st)
-	// stack = &st
-	// showCards("stack", *stack)
 	if fc.Name != mc.Name {
 		panic(fmt.Sprintf("ERROR: missing card! %s %v", mc, stack))
 	}
@@ -393,11 +401,11 @@ func lowestCostCard(d []cd.Card) cd.Card {
 }
 
 func resolveEffects(pg *Playgroup, c cd.Card) {
+	p := &pg.Players[pg.PlayerTurn]
 	pg.ThisTurn.Actions += c.Effects.ExtraActions
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	if c.Effects.DrawCard > 0 {
-		p := &pg.Players[pg.PlayerTurn]
 		nc := Draw(p, c.Effects.DrawCard)
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
@@ -405,14 +413,13 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	if c.CTypes.Attack == true {
 		resolveAttacks(pg, c)
 	}
-	resolveSequence(pg, c)
+	resolveSequence(pg, p, c.Effects.Sequence)
 }
 
-func resolveSequence(pg *Playgroup, c cd.Card) {
+func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	countX := 0 // replace with len(cardSet)?
-	p := &pg.Players[pg.PlayerTurn]
-	for i, s := range c.Effects.Sequence {
+	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
 			// decision point here
@@ -492,27 +499,41 @@ func resolveSequence(pg *Playgroup, c cd.Card) {
 			}
 			fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
 		}
+		if s.GetSupplyCard.Name != "" {
+			fmt.Println("\t\t\t\t GetCard", s.GetSupplyCard.Name)
+			cardSet = append(cardSet, getSupplyCard(p, &pg.Supply, s.GetSupplyCard))
+		}
+		if s.GetHandType != "" {
+			fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
+			vc := findCards(p.Hand.Cards, s.GetHandType)
+			if len(vc) > 0 {
+				cardSet = append(cardSet, vc[0])
+			}
+		}
 	}
 }
 
 func resolveAttacks(pg *Playgroup, c cd.Card) {
 	for i := range pg.Players {
+		p := &pg.Players[i]
 		if i == pg.PlayerTurn {
 			continue
 		}
-		fmt.Println("\t\t Attacking", pg.Players[i].Name)
-		defended := checkReactions(&pg.Players[i])
+		fmt.Println("\t\t Attacking", p.Name)
+		defended := checkReactions(p)
 		if defended == true {
 			fmt.Println("\t\t defended!")
 			continue
 		}
 		if c.Attacks.DiscardTo > 0 {
-			discardTo(&pg.Players[i], c.Attacks.DiscardTo)
+			discardTo(p, c.Attacks.DiscardTo)
 		}
 		if c.Attacks.GainCurse > 0 {
-			gainCurse(&pg.Players[i], &pg.Supply, c.Attacks.GainCurse)
+			gainCurse(p, &pg.Supply, c.Attacks.GainCurse)
 		}
+		resolveSequence(pg, p, c.Attacks.Sequence)
 	}
+	fmt.Println("\t\t finished attacks")
 }
 
 func showCards(s string, h Cards) {
@@ -640,6 +661,43 @@ func bestPlayableCard(cs []cd.Card) cd.Card {
 	return b
 }
 
+func findType(ct cd.Card, h []cd.Card) []cd.Card {
+	var mc []cd.Card
+	for _, c := range h {
+		if ct.CTypes.Action == true {
+			if c.CTypes.Action == true {
+				mc = append(mc, c)
+			}
+		}
+		if ct.CTypes.Treasure == true {
+			if c.CTypes.Treasure == true {
+				mc = append(mc, c)
+			}
+		}
+		if ct.CTypes.Victory == true {
+			if c.CTypes.Victory == true {
+				mc = append(mc, c)
+			}
+		}
+		if ct.CTypes.Curse == true {
+			if c.CTypes.Curse == true {
+				mc = append(mc, c)
+			}
+		}
+		if ct.CTypes.Attack == true {
+			if c.CTypes.Attack == true {
+				mc = append(mc, c)
+			}
+		}
+		if ct.CTypes.Reaction == true {
+			if c.CTypes.Reaction == true {
+				mc = append(mc, c)
+			}
+		}
+	}
+	return mc
+}
+
 func InitializeSupply(pl int) cd.Supply {
 
 	var s cd.Supply
@@ -679,6 +737,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})

@@ -70,9 +70,10 @@ func DefChapel() cd.Card {
 	c.Name = "Chapel"
 	c.Cost = 2
 	c.CTypes.Action = true
-	var s1 cd.Sequence
-	s1.CountTrash = 4
-	c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	// var s1 cd.Sequence
+	// s1.CountTrash = 4
+	// c.Effects.Sequence = append(c.Effects.Sequence, s1)
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountTrash: 4})
 	return c
 }
 
@@ -82,12 +83,8 @@ func DefCellar() cd.Card {
 	c.Cost = 2
 	c.CTypes.Action = true
 	c.Effects.ExtraActions = 1
-	var s1 cd.Sequence
-	s1.CountDiscard = 1000 // infinite?
-	c.Effects.Sequence = append(c.Effects.Sequence, s1)
-	var s2 cd.Sequence
-	s2.DrawCount = true
-	c.Effects.Sequence = append(c.Effects.Sequence, s2)
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: 1000})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: true})
 	return c
 }
 
@@ -119,12 +116,16 @@ func DefHarbinger() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
 	c.Effects.ExtraActions = 1
-	var s1 cd.Sequence
-	s1.RetrieveDiscard = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, s1)
-	var s2 cd.Sequence
-	s2.PlaceDeck = true
-	c.Effects.Sequence = append(c.Effects.Sequence, s2)
+	/*
+		var s1 cd.Sequence
+		s1.RetrieveDiscard = 1
+		c.Effects.Sequence = append(c.Effects.Sequence, s1)
+		var s2 cd.Sequence
+		s2.PlaceDeck = true
+		c.Effects.Sequence = append(c.Effects.Sequence, s2)
+	*/
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
 	return c
 }
 
@@ -217,6 +218,19 @@ func DefMilitia() cd.Card {
 	c.CTypes.Attack = true
 	c.Effects.ExtraCoins = 2
 	c.Attacks.DiscardTo = 3
+	return c
+}
+
+func DefBureaucrat() cd.Card {
+	var c cd.Card
+	c.Name = "Bureaucrat"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.CTypes.Attack = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: DefSilver()})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "victory"}) // any victory card
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: true})
 	return c
 }
 
