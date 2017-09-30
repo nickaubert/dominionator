@@ -339,21 +339,6 @@ func getCards(stack *Cards, set []cd.Card) []cd.Card {
 	return fc
 }
 
-/*
-func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
-	var ac []cd.Card
-	var na []cd.Card
-	for _, c := range cs {
-		if c.CTypes.Action == true {
-			ac = append(ac, c)
-			continue
-		}
-		na = append(na, c)
-	}
-	return ac, na
-}
-*/
-
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
 	var h cd.Card
@@ -395,25 +380,25 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
-	countX := 0 // replace with len(cardSet)?
+	// countX := 0 // replace with len(cardSet)?
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
 			// decision point here
-			fmt.Println("\t\t\t\t CountDiscard")
 			vc := findCardType(p.Hand.Cards, "nonUsable")
 			for j, v := range vc {
 				if j > s.CountDiscard {
 					break
 				}
 				discardCards(p, []cd.Card{v})
-				countX++
+				cardSet = append(cardSet, v)
 			}
+			fmt.Println("\t\t\t\t CountDiscard", len(cardSet))
 		}
 		if s.DrawCount == true {
-			fmt.Println("\t\t\t\t DrawCount")
-			nc := Draw(p, countX)
+			nc := Draw(p, len(cardSet))
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
+			fmt.Println("\t\t\t\t DrawCount", len(cardSet))
 		}
 		if s.CountTrash > 0 {
 			// decision point here
@@ -425,7 +410,8 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				}
 				removeFromHand(p, u)
 				trashFromHand(p, pg, u)
-				countX++
+				// countX++
+				cardSet = append(cardSet, u)
 			}
 		}
 		if s.RetrieveDiscard > 0 {
@@ -450,12 +436,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.DiscardNonMatch != "" {
 			fmt.Println("\t\t\t\t DiscardNonMatch", s.DiscardNonMatch)
-			// should be able to replace this with getCards...
-			// ac, na := siftActionCards(cardSet)
-			// matchList := findCardType(cardSet, "action")
-			// cardSet = append(cardSet, getCard(&p.Hand, s.MayTrash))
-			// if len(ac) > 0 {
-			// }
 			var oldSet Cards
 			oldSet.Cards = cardSet
 			cardSet = getCards(&oldSet, findCardType(oldSet.Cards, s.DiscardNonMatch))
