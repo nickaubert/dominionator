@@ -138,16 +138,13 @@ func CleanupPhase(pg *Playgroup) {
 	p.Discard.Cards = append(p.Discard.Cards, p.Hand.Cards...)
 	p.Hand.Cards = p.Hand.Cards[:0]
 	nc := Draw(p, 5)
-	// AddHand(p, nc)
 	p.Hand.Cards = append(p.Hand.Cards, nc...)
-	// pg.Players[pg.PlayerTurn] = p
 }
 
 func Draw(p *Player, d int) []cd.Card {
 	var nc []cd.Card
 	for i := 0; i < d; i++ {
 		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
-		// fmt.Println("\t\t\t drawing", c.Name)
 		p.Deck.Cards = z
 		nc = append(nc, c)
 		if len(p.Deck.Cards) == 0 {
@@ -159,41 +156,33 @@ func Draw(p *Player, d int) []cd.Card {
 	return nc
 }
 
-/*
-func AddHand(p *Player, nc []cd.Card) {
-	if len(nc) > 0 {
-		p.Hand.Cards = append(p.Hand.Cards, nc...)
-	}
-}
-*/
-
 func SelectCardBuy(o int, s cd.Supply) cd.Card {
 	// decision point here
 	// this is not the best heuristic
 	var highestCost int
-	for _, l := range s.Piles {
-		if l.Count == 0 {
+	for _, pl := range s.Piles {
+		if pl.Count == 0 {
 			continue
 		}
-		if l.Card.Cost > o {
+		if pl.Card.Cost > o {
 			continue
 		}
-		if l.Card.Cost > highestCost {
-			highestCost = l.Card.Cost
+		if pl.Card.Cost > highestCost {
+			highestCost = pl.Card.Cost
 		}
 	}
 	var bestCards []cd.Card
-	for _, l := range s.Piles {
-		if l.Count == 0 {
+	for _, pl := range s.Piles {
+		if pl.Count == 0 {
 			continue
 		}
-		if l.Card.Cost != highestCost {
+		if pl.Card.Cost != highestCost {
 			continue
 		}
-		if l.Card.CTypes.Curse == true {
+		if pl.Card.CTypes.Curse == true {
 			continue // decision point, yeah dont buy curses
 		}
-		bestCards = append(bestCards, l.Card)
+		bestCards = append(bestCards, pl.Card)
 	}
 	if len(bestCards) == 0 {
 		return cd.Card{}
@@ -212,26 +201,10 @@ func gainCard(s *cd.Supply, c cd.Card) cd.Card {
 			}
 			s.Piles[n].Count--
 			return c
-			// p.Discard.Cards = append(p.Discard.Cards, c)
 		}
 	}
 	return cd.Card{}
 }
-
-/*
-func getSupplyCard(p *Player, s *cd.Supply, c cd.Card) cd.Card {
-	for n, pl := range s.Piles {
-		if pl.Card.Name == c.Name {
-			if s.Piles[n].Count == 0 {
-				return cd.Card{}
-			}
-			s.Piles[n].Count--
-			return c
-		}
-	}
-	return cd.Card{}
-}
-*/
 
 func CheckEnd(s cd.Supply) bool {
 	emptyPiles := 0
@@ -256,14 +229,6 @@ func CheckScores(pg Playgroup) {
 		p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
 		p.Deck.Cards = append(p.Deck.Cards, p.Discard.Cards...)
 		p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
-
-		/*
-		   fmt.Println(p.Name, "deck:")
-		   for _, c := range p.Deck {
-		       fmt.Print(c.Name, ", ")
-		   }
-		   fmt.Print("\n")
-		*/
 
 		vp := countVictoryPoints(p.Deck.Cards)
 		fmt.Println(p.Name, vp, "points")
@@ -293,21 +258,6 @@ func ShuffleDeck(p *Player) {
 	}
 	p.Deck.Cards = n
 }
-
-/*
-// cant range over pointer
-func ShuffleCards(d *[]cd.Card) {
-	rand.Seed(time.Now().UnixNano())
-	var n []cd.Card
-    ud := *d
-	for _ = range ud {
-		r := rand.Intn(len(ud))
-		n = append(n, ud[r])
-		ud = append(ud[:r], ud[r+1:]...)
-	}
-	d = &n
-}
-*/
 
 func findCardType(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
@@ -350,7 +300,7 @@ func findCardType(h []cd.Card, t string) []cd.Card {
 	return cs
 }
 
-func findCard(h []cd.Card, mc cd.Card, m int) []cd.Card {
+func findCards(h []cd.Card, mc cd.Card, m int) []cd.Card {
 	var fc []cd.Card
 	f := 0
 	for _, c := range h {
@@ -389,6 +339,7 @@ func getCards(stack *Cards, set []cd.Card) []cd.Card {
 	return fc
 }
 
+/*
 func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	var ac []cd.Card
 	var na []cd.Card
@@ -401,6 +352,7 @@ func siftActionCards(cs []cd.Card) ([]cd.Card, []cd.Card) {
 	}
 	return ac, na
 }
+*/
 
 func highestCostCard(d []cd.Card) cd.Card {
 	o := -1
@@ -435,7 +387,6 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 		nc := Draw(p, c.Effects.DrawCard)
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
-	// AddHand(&pg.Players[pg.PlayerTurn], nc)
 	if c.CTypes.Attack == true {
 		resolveAttacks(pg, c)
 	}
@@ -462,7 +413,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.DrawCount == true {
 			fmt.Println("\t\t\t\t DrawCount")
 			nc := Draw(p, countX)
-			// AddHand(p, nc)
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
 		}
 		if s.CountTrash > 0 {
@@ -496,17 +446,20 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.DrawDeck > 0 {
 			fmt.Println("\t\t\t\t DrawDeck")
-			// fmt.Println("seq draw", s.DrawDeck)
 			cardSet = append(cardSet, Draw(p, s.DrawDeck)...)
-			// showCards("hand", p.Hand.Cards)
-			// showCards("cardSet", cardSet)
 		}
-		if s.DiscardNonAction == true {
-			fmt.Println("\t\t\t\t DiscardNonAction")
-			ac, na := siftActionCards(cardSet)
-			// fmt.Println("seq keep", len(ac), "discard", len(na))
-			discardCards(p, na)
-			cardSet = ac
+		if s.DiscardNonMatch != "" {
+			fmt.Println("\t\t\t\t DiscardNonMatch", s.DiscardNonMatch)
+			// should be able to replace this with getCards...
+			// ac, na := siftActionCards(cardSet)
+			// matchList := findCardType(cardSet, "action")
+			// cardSet = append(cardSet, getCard(&p.Hand, s.MayTrash))
+			// if len(ac) > 0 {
+			// }
+			var oldSet Cards
+			oldSet.Cards = cardSet
+			cardSet = getCards(&oldSet, findCardType(oldSet.Cards, s.DiscardNonMatch))
+			discardCards(p, oldSet.Cards)
 		}
 		if s.PlayAction > 0 {
 			fmt.Println("\t\t\t\t PlayAction")
@@ -534,7 +487,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.GetSupplyCard.Name != "" {
 			fmt.Println("\t\t\t\t GetCard", s.GetSupplyCard.Name)
-			// cardSet = append(cardSet, gainCard(p, &pg.Supply, s.GetSupplyCard))
 			c := gainCard(&pg.Supply, s.GetSupplyCard)
 			if c.Name == "" {
 				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard.Name, "no card to match")
@@ -552,7 +504,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.MayTrash.Name != "" {
 			fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
 			// decision point whether to trash here
-			cs := findCard(p.Hand.Cards, s.MayTrash, 1)
+			cs := findCards(p.Hand.Cards, s.MayTrash, 1)
 			if len(cs) > 0 {
 				c := getCard(&p.Hand, s.MayTrash)
 				pg.Trash.Cards = append(pg.Trash.Cards, c)
@@ -626,7 +578,6 @@ func selectDiscardOwn(p *Player) cd.Card {
 func discardTo(p *Player, m int) {
 	for len(p.Hand.Cards) > m {
 		d := selectDiscardOwn(p)
-		// discardCards(p, d)
 		discardCards(p, []cd.Card{d})
 	}
 }
@@ -714,45 +665,6 @@ func bestPlayableCard(cs []cd.Card) cd.Card {
 	}
 	return b
 }
-
-/*
-func findType(ct cd.Card, h []cd.Card) []cd.Card {
-	var mc []cd.Card
-	for _, c := range h {
-		if ct.CTypes.Action == true {
-			if c.CTypes.Action == true {
-				mc = append(mc, c)
-			}
-		}
-		if ct.CTypes.Treasure == true {
-			if c.CTypes.Treasure == true {
-				mc = append(mc, c)
-			}
-		}
-		if ct.CTypes.Victory == true {
-			if c.CTypes.Victory == true {
-				mc = append(mc, c)
-			}
-		}
-		if ct.CTypes.Curse == true {
-			if c.CTypes.Curse == true {
-				mc = append(mc, c)
-			}
-		}
-		if ct.CTypes.Attack == true {
-			if c.CTypes.Attack == true {
-				mc = append(mc, c)
-			}
-		}
-		if ct.CTypes.Reaction == true {
-			if c.CTypes.Reaction == true {
-				mc = append(mc, c)
-			}
-		}
-	}
-	return mc
-}
-*/
 
 func InitializeSupply(pl int) cd.Supply {
 

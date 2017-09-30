@@ -124,21 +124,9 @@ func DefVassal() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.ExtraCoins = 2
-	/*
-		var s1 cd.Sequence
-		s1.DrawDeck = 1
-		c.Effects.Sequence = append(c.Effects.Sequence, s1)
-		var s2 cd.Sequence
-		s2.DiscardNonAction = true
-		c.Effects.Sequence = append(c.Effects.Sequence, s2)
-		var s3 cd.Sequence
-		s3.PlayAction = 1
-		c.Effects.Sequence = append(c.Effects.Sequence, s3)
-	*/
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: 1})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonAction: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "action"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: 1})
-
 	return c
 }
 
@@ -147,9 +135,6 @@ func DefWorkshop() cd.Card {
 	c.Name = "Workshop"
 	c.Cost = 3
 	c.CTypes.Action = true
-	// var s1 cd.Sequence
-	// s1.GainMax = 4
-	// c.Effects.Sequence = append(c.Effects.Sequence, s1)
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainMax: 4})
 	return c
 }

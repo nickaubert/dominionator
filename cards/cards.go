@@ -36,19 +36,19 @@ type Effect struct {
 }
 
 type Sequence struct {
-	CountDiscard     int    // max cards to discard
-	CountTrash       int    // max cards to trash
-	RetrieveDiscard  int    // max cards to pull from discard
-	DrawDeck         int    // max cards to draw from deck
-	PlayAction       int    // play action this many times
-	GainMax          int    // gain card up to this cost
-	GetSupplyCard    Card   // get this card from supply
-	MayTrash         Card   // may trash this card from hand
-	GetHandType      string // get any of this card type from hand
-	AddXCoins        int    // add "X" * int coins
-	DiscardNonAction bool   // discard non-action cards from set
-	DrawCount        bool   // Draw "X" cards
-	PlaceDeck        bool   // Place cards onto deck
+	CountDiscard    int    // max cards to discard
+	CountTrash      int    // max cards to trash
+	RetrieveDiscard int    // max cards to pull from discard
+	DrawDeck        int    // max cards to draw from deck
+	PlayAction      int    // play action this many times
+	GainMax         int    // gain card up to this cost
+	AddXCoins       int    // add "X" * int coins
+	GetSupplyCard   Card   // get this card from supply
+	MayTrash        Card   // may trash this card from hand
+	GetHandType     string // get any of this card type from hand
+	DiscardNonMatch string // discard non-matching cards from set
+	DrawCount       bool   // Draw "X" cards
+	PlaceDeck       bool   // Place cards onto deck
 }
 
 type Attack struct {
