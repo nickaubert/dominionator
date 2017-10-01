@@ -36,19 +36,31 @@ type Effect struct {
 }
 
 type Sequence struct {
-	CountDiscard    int    // max cards to discard
-	CountTrash      int    // max cards to trash
-	RetrieveDiscard int    // max cards to pull from discard
-	DrawDeck        int    // max cards to draw from deck
-	PlayAction      int    // play action this many times
-	GainMax         int    // gain card up to this cost
-	AddXCoins       int    // add "X" * int coins
+	CountDiscard    int // max cards to discard
+	TrashMax        int // max cards to trash
+	RetrieveDiscard int // max cards to pull from discard
+	DrawDeck        int // max cards to draw from deck
+	PlayAction      int // play action this many times
+	GainMax         int // gain card up to this cost
+	AddXCoins       int // add "X" * int coins
+	PickEm          int // pick this many cards (at random...)
+	// UpgradePlus     int    // upgrade cardSet[0].Cost + this
+	// UpgradeType Plus int    // upgrade cardSet[0].Cost + this
+	// SetGainType     string // var gainType to this type
+	SetGainCost  bool   // var gainCost = cardSet[0].Cost
+	AddGainCost  int    // var gainCost += this much
+	TrashSet     bool   // trash cardSet
+	GainType     string // select this type from supply with max cost
+	PlaceDiscard bool   // place cardSet in discard
+	PlaceHand    bool   // place cardSet in hand
+	// UpgradeBy       int    // trash and upgrade by this much
 	GetSupplyCard   Card   // get this card from supply
 	MayTrash        Card   // may trash this card from hand
 	GetHandType     string // get any of this card type from hand
 	DiscardNonMatch string // discard non-matching cards from set
-	DrawCount       bool   // Draw "X" cards
-	PlaceDeck       bool   // Place cards onto deck
+	// SelectType      string // select one of this type from hand
+	DrawCount bool // Draw "X" cards
+	PlaceDeck bool // Place cards onto deck
 }
 
 type Attack struct {

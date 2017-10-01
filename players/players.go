@@ -113,7 +113,7 @@ func BuyPhase(pg *Playgroup) {
 		}
 
 		fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
-		c := SelectCardBuy(pg.ThisTurn.Coins, pg.Supply)
+		c := SelectCardBuy(pg.ThisTurn.Coins, "any", pg.Supply)
 		if c.Name == "" {
 			break
 		}
@@ -152,11 +152,15 @@ func Draw(p *Player, d int) []cd.Card {
 			p.Discard.Cards = p.Discard.Cards[:0]
 			ShuffleDeck(p)
 		}
+		if len(p.Deck.Cards) == 0 {
+			// out of cards
+			break
+		}
 	}
 	return nc
 }
 
-func SelectCardBuy(o int, s cd.Supply) cd.Card {
+func SelectCardBuy(o int, t string, s cd.Supply) cd.Card {
 	// decision point here
 	// this is not the best heuristic
 	var highestCost int
@@ -165,6 +169,9 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 			continue
 		}
 		if pl.Card.Cost > o {
+			continue
+		}
+		if matchType(pl.Card, t) != true {
 			continue
 		}
 		if pl.Card.Cost > highestCost {
@@ -177,6 +184,9 @@ func SelectCardBuy(o int, s cd.Supply) cd.Card {
 			continue
 		}
 		if pl.Card.Cost != highestCost {
+			continue
+		}
+		if matchType(pl.Card, t) != true {
 			continue
 		}
 		if pl.Card.CTypes.Curse == true {
@@ -262,42 +272,89 @@ func ShuffleDeck(p *Player) {
 func findCardType(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
 	for _, c := range h {
-		switch t {
-		case "action":
-			if c.CTypes.Action == true {
+		if matchType(c, t) {
+			cs = append(cs, c)
+		}
+		/*
+			switch t {
+			case "any":
 				cs = append(cs, c)
-			}
-		case "reaction":
-			if c.CTypes.Reaction == true {
-				cs = append(cs, c)
-			}
-		case "treasure":
-			if c.CTypes.Treasure == true {
-				cs = append(cs, c)
-			}
-		case "victory":
-			if c.CTypes.Victory == true {
-				cs = append(cs, c)
-			}
-		case "curse":
-			if c.CTypes.Curse == true {
-				cs = append(cs, c)
-			}
-		case "actionExtra":
-			if c.CTypes.Action == true {
-				if c.Effects.ExtraActions > 0 {
+			case "action":
+				if c.CTypes.Action == true {
 					cs = append(cs, c)
 				}
-			}
-		case "nonUsable":
-			if c.CTypes.Action == false {
-				if c.CTypes.Treasure == false {
+			case "reaction":
+				if c.CTypes.Reaction == true {
 					cs = append(cs, c)
 				}
+			case "treasure":
+				if c.CTypes.Treasure == true {
+					cs = append(cs, c)
+				}
+			case "victory":
+				if c.CTypes.Victory == true {
+					cs = append(cs, c)
+				}
+			case "curse":
+				if c.CTypes.Curse == true {
+					cs = append(cs, c)
+				}
+			case "actionExtra":
+				if c.CTypes.Action == true {
+					if c.Effects.ExtraActions > 0 {
+						cs = append(cs, c)
+					}
+				}
+			case "nonUsable":
+				if c.CTypes.Action == false {
+					if c.CTypes.Treasure == false {
+						cs = append(cs, c)
+					}
+				}
+			}
+		*/
+	}
+	return cs
+}
+
+func matchType(c cd.Card, t string) bool {
+	switch t {
+	case "any":
+		return true
+	case "action":
+		if c.CTypes.Action == true {
+			return true
+		}
+	case "reaction":
+		if c.CTypes.Reaction == true {
+			return true
+		}
+	case "treasure":
+		if c.CTypes.Treasure == true {
+			return true
+		}
+	case "victory":
+		if c.CTypes.Victory == true {
+			return true
+		}
+	case "curse":
+		if c.CTypes.Curse == true {
+			return true
+		}
+	case "actionExtra":
+		if c.CTypes.Action == true {
+			if c.Effects.ExtraActions > 0 {
+				return true
+			}
+		}
+	case "nonUsable":
+		if c.CTypes.Action == false {
+			if c.CTypes.Treasure == false {
+				return true
 			}
 		}
 	}
-	return cs
+	return false
 }
 
 func findCards(h []cd.Card, mc cd.Card, m int) []cd.Card {
@@ -380,7 +437,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
-	// countX := 0 // replace with len(cardSet)?
+	var gainCost int
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.CountDiscard > 0 {
@@ -400,19 +457,18 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
 			fmt.Println("\t\t\t\t DrawCount", len(cardSet))
 		}
-		if s.CountTrash > 0 {
+		if s.TrashMax > 0 {
 			// decision point here
-			fmt.Println("\t\t\t\t CountTrash")
 			cc := findCardType(p.Hand.Cards, "curse")
 			for j, u := range cc {
-				if j > s.CountTrash {
+				if j > s.TrashMax {
 					break
 				}
 				removeFromHand(p, u)
 				trashFromHand(p, pg, u)
-				// countX++
 				cardSet = append(cardSet, u)
 			}
+			fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
 		}
 		if s.RetrieveDiscard > 0 {
 			fmt.Println("\t\t\t\t RetrieveDiscard")
@@ -453,7 +509,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			}
 		}
 		if s.GainMax > 0 {
-			c := SelectCardBuy(s.GainMax, pg.Supply)
+			c := SelectCardBuy(s.GainMax, "any", pg.Supply)
 			if c.Name == "" {
 				fmt.Println("\t\t\t\t GainMax", s.GainMax, "no card to match")
 				continue
@@ -475,11 +531,61 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			cardSet = append(cardSet, c)
 		}
 		if s.GetHandType != "" {
+			// TODO: return mulitple cards
 			fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
 			vc := findCardType(p.Hand.Cards, s.GetHandType)
 			if len(vc) > 0 {
 				cardSet = append(cardSet, vc[0])
 			}
+		}
+		if s.PickEm > 0 {
+			// decision point here yes very much
+			fmt.Println("\t\t\t\t PickEm", s.PickEm)
+			if len(cardSet) > 0 {
+				rand.Seed(time.Now().UnixNano())
+				r := rand.Intn(len(cardSet))
+				cardSet = append(cardSet[:0], cardSet[r])
+			}
+		}
+		if s.SetGainCost == true {
+			if len(cardSet) > 0 {
+				gainCost = cardSet[0].Cost
+			}
+		}
+		if s.AddGainCost > 0 {
+			gainCost += s.AddGainCost
+		}
+		if s.TrashSet == true {
+			fmt.Println("\t\t\t\t TrashSet", len(cardSet))
+			if len(cardSet) > 0 {
+				fmt.Println("\t\t\t\t trashing", cardSet[0].Name)
+			}
+			for _, c := range cardSet {
+				getCard(&p.Hand, c) // remove from hand
+				pg.Trash.Cards = append(pg.Trash.Cards, c)
+			}
+			cardSet = cardSet[:0] // make sequence for this?
+		}
+		if s.GainType != "" {
+			c := SelectCardBuy(gainCost, s.GainType, pg.Supply)
+			if c.Name == "" {
+				fmt.Println("\t\t\t\t GainType", s.GainType, "no card to match")
+				continue
+			}
+			c = gainCard(&pg.Supply, c)
+			if c.Name == "" {
+				panic(fmt.Sprintf("ERROR: missing GainType card! %s %v", c, pg.Supply))
+			}
+			fmt.Println("\t\t\t\t GainType", c.Name)
+			cardSet = append(cardSet, c)
+		}
+		if s.PlaceDiscard == true {
+			fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
+			p.Discard.Cards = append(p.Discard.Cards, cardSet...)
+		}
+		if s.PlaceHand == true {
+			fmt.Println("\t\t\t\t PlaceHand", len(cardSet))
+			p.Hand.Cards = append(p.Hand.Cards, cardSet...)
 		}
 		if s.MayTrash.Name != "" {
 			fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
@@ -688,10 +794,12 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 
 	return s
 }

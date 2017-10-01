@@ -70,7 +70,7 @@ func DefChapel() cd.Card {
 	c.Name = "Chapel"
 	c.Cost = 2
 	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountTrash: 4})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: 4})
 	return c
 }
 
@@ -145,6 +145,36 @@ func DefSmithy() cd.Card {
 	c.Cost = 4
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 3
+	return c
+}
+
+func DefRemodel() cd.Card {
+	var c cd.Card
+	c.Name = "Remodel"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "any"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PickEm: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetGainCost: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddGainCost: 2})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashSet: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainType: "any"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: true})
+	return c
+}
+
+func DefMine() cd.Card {
+	var c cd.Card
+	c.Name = "Mine"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "treasure"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PickEm: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetGainCost: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddGainCost: 3})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashSet: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainType: "treasure"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHand: true})
 	return c
 }
 
