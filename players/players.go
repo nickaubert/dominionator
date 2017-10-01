@@ -438,25 +438,40 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	var gainCost int
+	seqCounts := make(map[string]int)
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
-		if s.CountDiscard > 0 {
+		if s.CountDiscard != "" {
 			// decision point here
 			vc := findCardType(p.Hand.Cards, "nonUsable")
-			for j, v := range vc {
-				if j > s.CountDiscard {
-					break
-				}
-				discardCards(p, []cd.Card{v})
-				cardSet = append(cardSet, v)
-			}
-			fmt.Println("\t\t\t\t CountDiscard", len(cardSet))
+			discardCards(p, vc)
+			seqCounts[s.CountDiscard] = len(vc)
+			fmt.Println("\t\t\t\t CountDiscard", seqCounts[s.CountDiscard])
 		}
-		if s.DrawCount == true {
-			nc := Draw(p, len(cardSet))
+		if s.DrawCount != "" {
+			nc := Draw(p, seqCounts[s.DrawCount])
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
-			fmt.Println("\t\t\t\t DrawCount", len(cardSet))
+			fmt.Println("\t\t\t\t DrawCount", seqCounts[s.DrawCount])
 		}
+		/*
+			if s.CountDiscard > 0 {
+				// decision point here
+				vc := findCardType(p.Hand.Cards, "nonUsable")
+				for j, v := range vc {
+					if j > s.CountDiscard {
+						break
+					}
+					discardCards(p, []cd.Card{v})
+					cardSet = append(cardSet, v)
+				}
+				fmt.Println("\t\t\t\t CountDiscard", len(cardSet))
+			}
+			if s.DrawCount == true {
+				nc := Draw(p, len(cardSet))
+				p.Hand.Cards = append(p.Hand.Cards, nc...)
+				fmt.Println("\t\t\t\t DrawCount", len(cardSet))
+			}
+		*/
 		if s.TrashMax > 0 {
 			// decision point here
 			cc := findCardType(p.Hand.Cards, "curse")

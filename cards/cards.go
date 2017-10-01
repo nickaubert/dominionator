@@ -36,14 +36,15 @@ type Effect struct {
 }
 
 type Sequence struct {
-	CountDiscard    int // max cards to discard
-	TrashMax        int // max cards to trash
-	RetrieveDiscard int // max cards to pull from discard
-	DrawDeck        int // max cards to draw from deck
-	PlayAction      int // play action this many times
-	GainMax         int // gain card up to this cost
-	AddXCoins       int // add "X" * int coins
-	PickEm          int // pick this many cards (at random...)
+	CountDiscard    string // max cards to discard
+	DrawCount       string // Draw "X" cards
+	TrashMax        int    // max cards to trash
+	RetrieveDiscard int    // max cards to pull from discard
+	DrawDeck        int    // max cards to draw from deck
+	PlayAction      int    // play action this many times
+	GainMax         int    // gain card up to this cost
+	AddXCoins       int    // add "X" * int coins
+	PickEm          int    // pick this many cards (at random...)
 	// UpgradePlus     int    // upgrade cardSet[0].Cost + this
 	// UpgradeType Plus int    // upgrade cardSet[0].Cost + this
 	// SetGainType     string // var gainType to this type
@@ -59,7 +60,6 @@ type Sequence struct {
 	GetHandType     string // get any of this card type from hand
 	DiscardNonMatch string // discard non-matching cards from set
 	// SelectType      string // select one of this type from hand
-	DrawCount bool // Draw "X" cards
 	PlaceDeck bool // Place cards onto deck
 }
 

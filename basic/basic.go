@@ -80,8 +80,10 @@ func DefCellar() cd.Card {
 	c.Cost = 2
 	c.CTypes.Action = true
 	c.Effects.ExtraActions = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: 1000})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: "discards"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: "discards"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: 1000})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: true})
 	return c
 }
 
