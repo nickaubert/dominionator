@@ -439,9 +439,18 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	var gainCost int
 	cardSets := make(map[string][]cd.Card)
+	thisCard := make(map[string]cd.Card)
 	seqCounts := make(map[string]int)
+	thisType := make(map[string]string)
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
+		if s.SetVal.Name != "" {
+			fmt.Println("\t\t\t\t SetVal", s.SetVal.Name, "type", s.SetVal.Type)
+			seqCounts[s.SetVal.Name] = s.SetVal.Val
+			thisType[s.SetVal.Name] = s.SetVal.Type
+			thisCard[s.SetVal.Name] = s.SetVal.Card
+			cardSets[s.SetVal.Name] = append(cardSets[s.SetVal.Name], s.SetVal.Card)
+		}
 		if s.CountDiscard != "" {
 			// decision point here
 			vc := findCardType(p.Hand.Cards, "nonUsable")
@@ -453,9 +462,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			nc := Draw(p, seqCounts[s.DrawCount])
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
 			fmt.Println("\t\t\t\t DrawCount", seqCounts[s.DrawCount])
-		}
-		if s.SetVal.Name != "" {
-			seqCounts[s.SetVal.Name] = s.SetVal.Val
 		}
 		if s.TrashMax != "" {
 			// decision point here
@@ -488,6 +494,38 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t PlaceDeck", showQuick(cardSets[s.PlaceDeck]))
 			addDeckTop(p, cardSets[s.PlaceDeck])
 		}
+		if s.GetSupplyCard != "" {
+			fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard)
+			c := gainCard(&pg.Supply, thisCard[s.GetSupplyCard])
+			if c.Name == "" {
+				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard, "no card to match")
+				continue
+			}
+			var cs []cd.Card
+			cs = append(cs, c)
+			cardSets[s.GetSupplyCard] = cs
+		}
+		if s.GetHandTypeX != "" {
+			// TODO: set count
+			fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, thisType[s.GetHandTypeX])
+			vc := findCardType(p.Hand.Cards, thisType[s.GetHandTypeX])
+			var cs []cd.Card
+			if len(vc) > 0 {
+				cs = append(cs, vc[0])
+			}
+			cardSets[s.GetHandTypeX] = cs
+		}
+		/*
+			if s.GetSupplyCard.Name != "" {
+				fmt.Println("\t\t\t\t GetCard", s.GetSupplyCard.Name)
+				c := gainCard(&pg.Supply, s.GetSupplyCard)
+				if c.Name == "" {
+					fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard.Name, "no card to match")
+					continue
+				}
+				cardSet = append(cardSet, c)
+			}
+		*/
 		/*
 			if s.RetrieveDiscard > 0 {
 				fmt.Println("\t\t\t\t RetrieveDiscard")
@@ -540,15 +578,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			}
 			p.Discard.Cards = append(p.Discard.Cards, c)
 			fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
-		}
-		if s.GetSupplyCard.Name != "" {
-			fmt.Println("\t\t\t\t GetCard", s.GetSupplyCard.Name)
-			c := gainCard(&pg.Supply, s.GetSupplyCard)
-			if c.Name == "" {
-				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard.Name, "no card to match")
-				continue
-			}
-			cardSet = append(cardSet, c)
 		}
 		if s.GetHandType != "" {
 			// TODO: return mulitple cards
@@ -819,7 +848,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})

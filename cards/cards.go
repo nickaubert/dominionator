@@ -36,13 +36,14 @@ type Effect struct {
 }
 
 type Sequence struct {
-	CountDiscard string // max cards to discard
-	DrawCount    string // Draw "X" cards
-	SetVal       SeqVar // set value
-	TrashMax     string // max cards to trash
-
+	SetVal          SeqVar // set value
+	CountDiscard    string // max cards to discard
+	DrawCount       string // Draw "X" cards
+	TrashMax        string // max cards to trash
 	RetrieveDiscard string // max cards to pull from discard
 	PlaceDeck       string // Place cards onto deck
+	GetSupplyCard   string // get this card from supply
+	GetHandTypeX    string // get any of this card type from hand
 
 	DrawDeck   int // max cards to draw from deck
 	PlayAction int // play action this many times
@@ -59,7 +60,6 @@ type Sequence struct {
 	PlaceDiscard bool   // place cardSet in discard
 	PlaceHand    bool   // place cardSet in hand
 	// UpgradeBy       int    // trash and upgrade by this much
-	GetSupplyCard   Card   // get this card from supply
 	MayTrash        Card   // may trash this card from hand
 	GetHandType     string // get any of this card type from hand
 	DiscardNonMatch string // discard non-matching cards from set
@@ -69,6 +69,8 @@ type Sequence struct {
 type SeqVar struct {
 	Name string
 	Val  int
+	Card Card
+	Type string
 }
 
 type Attack struct {

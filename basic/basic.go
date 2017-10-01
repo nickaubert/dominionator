@@ -117,8 +117,22 @@ func DefHarbinger() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "retrieve", Val: 1}})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: "retrieve"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "retrieve"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: 1})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
+	return c
+}
+
+func DefBureaucrat() cd.Card {
+	var c cd.Card
+	c.Name = "Bureaucrat"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.CTypes.Attack = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "silver", Card: DefSilver()}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: "silver"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "silver"})
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "putdeck", Type: "victory", Val: 1}})
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandTypeX: "putdeck"})
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: "putdeck"})
+	// or reveals a hand with no victory cards...
 	return c
 }
 
@@ -234,22 +248,6 @@ func DefMilitia() cd.Card {
 	c.Attacks.DiscardTo = 3
 	return c
 }
-
-/*
-func DefBureaucrat() cd.Card {
-	var c cd.Card
-	c.Name = "Bureaucrat"
-	c.Cost = 4
-	c.CTypes.Action = true
-	c.CTypes.Attack = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: DefSilver()})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "victory"})
-	// or reveals a hand with no victory cards...
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: true})
-	return c
-}
-*/
 
 func DefMoneylender() cd.Card {
 	var c cd.Card
