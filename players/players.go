@@ -438,6 +438,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	var gainCost int
+	cardSets := make(map[string][]cd.Card)
 	seqCounts := make(map[string]int)
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
@@ -469,37 +470,42 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			}
 			fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
 		}
-		/*
-			if s.TrashMax > 0 {
-				// decision point here
-				cc := findCardType(p.Hand.Cards, "curse")
-				for j, u := range cc {
-					if j > s.TrashMax {
-						break
-					}
-					removeFromHand(p, u)
-					trashFromHand(p, pg, u)
-					cardSet = append(cardSet, u)
-				}
-				fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
-			}
-		*/
-		if s.RetrieveDiscard > 0 {
-			fmt.Println("\t\t\t\t RetrieveDiscard")
-			for j := 0; j < s.RetrieveDiscard; j++ {
+		if s.RetrieveDiscard != "" {
+			fmt.Println("\t\t\t\t RetrieveDiscard", seqCounts[s.RetrieveDiscard])
+			var cs []cd.Card
+			for j := 0; j < seqCounts[s.RetrieveDiscard]; j++ {
 				// decision point here
 				bc := bestPlayableCard(p.Discard.Cards)
 				// must have found something
 				if bc.Name != "" {
 					removeFromDiscard(p, bc)
-					cardSet = append(cardSet, bc)
+					cs = append(cs, bc)
 				}
 			}
+			cardSets[s.RetrieveDiscard] = cs
 		}
-		if s.PlaceDeck == true {
-			fmt.Println("\t\t\t\t PlaceDeck")
-			addDeckTop(p, cardSet)
+		if s.PlaceDeck != "" {
+			fmt.Println("\t\t\t\t PlaceDeck", showQuick(cardSets[s.PlaceDeck]))
+			addDeckTop(p, cardSets[s.PlaceDeck])
 		}
+		/*
+			if s.RetrieveDiscard > 0 {
+				fmt.Println("\t\t\t\t RetrieveDiscard")
+				for j := 0; j < s.RetrieveDiscard; j++ {
+					// decision point here
+					bc := bestPlayableCard(p.Discard.Cards)
+					// must have found something
+					if bc.Name != "" {
+						removeFromDiscard(p, bc)
+						cardSet = append(cardSet, bc)
+					}
+				}
+			}
+			if s.PlaceDeck == true {
+				fmt.Println("\t\t\t\t PlaceDeck")
+				addDeckTop(p, cardSet)
+			}
+		*/
 		if s.DrawDeck > 0 {
 			fmt.Println("\t\t\t\t DrawDeck")
 			cardSet = append(cardSet, Draw(p, s.DrawDeck)...)
@@ -647,6 +653,14 @@ func showCards(s string, h Cards) {
 		fmt.Print(c.Name, ", ")
 	}
 	fmt.Print("\n")
+}
+
+func showQuick(cs []cd.Card) string {
+	var disp string
+	for _, c := range cs {
+		disp += c.Name + ", "
+	}
+	return disp
 }
 
 func showStatus(pg *Playgroup) {
@@ -805,7 +819,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})

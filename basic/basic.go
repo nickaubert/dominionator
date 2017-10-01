@@ -72,7 +72,6 @@ func DefChapel() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "trash", Val: 4}})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: "trash"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: 4})
 	return c
 }
 
@@ -115,8 +114,11 @@ func DefHarbinger() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
 	c.Effects.ExtraActions = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: 1})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "retrieve", Val: 1}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: "retrieve"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "retrieve"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: 1})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: true})
 	return c
 }
 
@@ -233,6 +235,7 @@ func DefMilitia() cd.Card {
 	return c
 }
 
+/*
 func DefBureaucrat() cd.Card {
 	var c cd.Card
 	c.Name = "Bureaucrat"
@@ -246,6 +249,7 @@ func DefBureaucrat() cd.Card {
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: true})
 	return c
 }
+*/
 
 func DefMoneylender() cd.Card {
 	var c cd.Card
