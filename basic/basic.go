@@ -70,7 +70,9 @@ func DefChapel() cd.Card {
 	c.Name = "Chapel"
 	c.Cost = 2
 	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: 4})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "trash", Val: 4}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: "trash"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashMax: 4})
 	return c
 }
 
@@ -82,8 +84,6 @@ func DefCellar() cd.Card {
 	c.Effects.ExtraActions = 1
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: "discards"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: "discards"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: 1000})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: true})
 	return c
 }
 

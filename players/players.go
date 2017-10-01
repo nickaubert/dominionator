@@ -453,30 +453,14 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
 			fmt.Println("\t\t\t\t DrawCount", seqCounts[s.DrawCount])
 		}
-		/*
-			if s.CountDiscard > 0 {
-				// decision point here
-				vc := findCardType(p.Hand.Cards, "nonUsable")
-				for j, v := range vc {
-					if j > s.CountDiscard {
-						break
-					}
-					discardCards(p, []cd.Card{v})
-					cardSet = append(cardSet, v)
-				}
-				fmt.Println("\t\t\t\t CountDiscard", len(cardSet))
-			}
-			if s.DrawCount == true {
-				nc := Draw(p, len(cardSet))
-				p.Hand.Cards = append(p.Hand.Cards, nc...)
-				fmt.Println("\t\t\t\t DrawCount", len(cardSet))
-			}
-		*/
-		if s.TrashMax > 0 {
+		if s.SetVal.Name != "" {
+			seqCounts[s.SetVal.Name] = s.SetVal.Val
+		}
+		if s.TrashMax != "" {
 			// decision point here
 			cc := findCardType(p.Hand.Cards, "curse")
 			for j, u := range cc {
-				if j > s.TrashMax {
+				if j > seqCounts[s.TrashMax] {
 					break
 				}
 				removeFromHand(p, u)
@@ -485,6 +469,21 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			}
 			fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
 		}
+		/*
+			if s.TrashMax > 0 {
+				// decision point here
+				cc := findCardType(p.Hand.Cards, "curse")
+				for j, u := range cc {
+					if j > s.TrashMax {
+						break
+					}
+					removeFromHand(p, u)
+					trashFromHand(p, pg, u)
+					cardSet = append(cardSet, u)
+				}
+				fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
+			}
+		*/
 		if s.RetrieveDiscard > 0 {
 			fmt.Println("\t\t\t\t RetrieveDiscard")
 			for j := 0; j < s.RetrieveDiscard; j++ {
