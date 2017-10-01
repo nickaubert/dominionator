@@ -44,25 +44,25 @@ type Sequence struct {
 	PlaceDeck       string // Place cards onto deck
 	GetSupplyCard   string // get this card from supply
 	GetHandTypeX    string // get any of this card type from hand
+	DrawDeck        string // max cards to draw from deck
+	DiscardNonMatch string // discard non-matching cards from set
+	PlayAction      string // play action this many times
 
-	DrawDeck   int // max cards to draw from deck
-	PlayAction int // play action this many times
-	GainMax    int // gain card up to this cost
-	AddXCoins  int // add "X" * int coins
-	PickEm     int // pick this many cards (at random...)
-	// UpgradePlus     int    // upgrade cardSet[0].Cost + this
-	// UpgradeType Plus int    // upgrade cardSet[0].Cost + this
-	// SetGainType     string // var gainType to this type
+	GainMax      int    // gain card up to this cost
+	AddXCoins    int    // add "X" * int coins
+	PickEm       int    // pick this many cards (at random...)
 	SetGainCost  bool   // var gainCost = cardSet[0].Cost
 	AddGainCost  int    // var gainCost += this much
 	TrashSet     bool   // trash cardSet
 	GainType     string // select this type from supply with max cost
 	PlaceDiscard bool   // place cardSet in discard
 	PlaceHand    bool   // place cardSet in hand
+	MayTrash     Card   // may trash this card from hand
+	GetHandType  string // get any of this card type from hand
+	// UpgradePlus     int    // upgrade cardSet[0].Cost + this
+	// UpgradeType Plus int    // upgrade cardSet[0].Cost + this
+	// SetGainType     string // var gainType to this type
 	// UpgradeBy       int    // trash and upgrade by this much
-	MayTrash        Card   // may trash this card from hand
-	GetHandType     string // get any of this card type from hand
-	DiscardNonMatch string // discard non-matching cards from set
 	// SelectType      string // select one of this type from hand
 }
 

@@ -142,9 +142,12 @@ func DefVassal() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.ExtraCoins = 2
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: 1})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "action"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "vassal", Val: 1, Type: "action"}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: 1})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: 1})
 	return c
 }
 
