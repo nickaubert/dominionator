@@ -54,6 +54,7 @@ type Sequence struct {
 	GainCard        string
 	AddCost         string
 	TrashCards      string
+	PlaceHand       string
 
 	GainMax     int    // gain card up to this cost
 	AddXCoins   int    // add "X" * int coins
@@ -62,7 +63,6 @@ type Sequence struct {
 	AddGainCost int    // var gainCost += this much
 	TrashSet    bool   // trash cardSet
 	GainType    string // select this type from supply with max cost
-	PlaceHand   bool   // place cardSet in hand
 	MayTrash    Card   // may trash this card from hand
 	GetHandType string // get any of this card type from hand
 	// UpgradePlus     int    // upgrade cardSet[0].Cost + this

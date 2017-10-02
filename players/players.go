@@ -452,10 +452,10 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
 		/*
-		        if s.CopyVal.Name != "" {
-					fmt.Println("\t\t\t\t CopyVal", s.CopyVal.Name, s.CopyVal.NewName)
-					seqVal[s.CopyVal.NewName] = seqVal[s.CopyVal.Name]
-		        }
+			        if s.CopyVal.Name != "" {
+						fmt.Println("\t\t\t\t CopyVal", s.CopyVal.Name, s.CopyVal.NewName)
+						seqVal[s.CopyVal.NewName] = seqVal[s.CopyVal.Name]
+			        }
 		*/
 		if s.CountDiscard != "" {
 			// decision point here
@@ -570,6 +570,12 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
 			p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
 		}
+		if s.PlaceHand != "" {
+			// fmt.Println("\t\t\t\t PlaceHand", len(cardSet))
+			// p.Hand.Cards = append(p.Hand.Cards, cardSet...)
+			fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCard[s.PlaceHand].Name)
+			p.Hand.Cards = append(p.Hand.Cards, seqCard[s.PlaceHand])
+		}
 		if s.AddCost != "" {
 			o := 0
 			for _, c := range seqCards[s.AddCost] {
@@ -658,10 +664,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				p.Discard.Cards = append(p.Discard.Cards, cardSet...)
 			}
 		*/
-		if s.PlaceHand == true {
-			fmt.Println("\t\t\t\t PlaceHand", len(cardSet))
-			p.Hand.Cards = append(p.Hand.Cards, cardSet...)
-		}
 		if s.MayTrash.Name != "" {
 			fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
 			// decision point whether to trash here
@@ -882,7 +884,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 
 	return s
 }

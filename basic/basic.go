@@ -180,17 +180,20 @@ func DefRemodel() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: "remodel"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CopyVal: cd.SeqVar{Name: "select", NewName: "upgrade"}})
-	/*
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "any"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PickEm: 1})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetGainCost: true})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddGainCost: 2})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashSet: true})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainType: "any"})
-		// TODO: Fix this
-		// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: true})
-	*/
+	return c
+}
+
+func DefMine() cd.Card {
+	var c cd.Card
+	c.Name = "Mine"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "mine", Type: "treasure", Val: 3}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHand: "mine"})
 	return c
 }
 
