@@ -144,10 +144,8 @@ func DefVassal() cd.Card {
 	c.Effects.ExtraCoins = 2
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "vassal", Val: 1, Type: "action"}})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: 1})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: 1})
 	return c
 }
 
@@ -156,7 +154,9 @@ func DefWorkshop() cd.Card {
 	c.Name = "Workshop"
 	c.Cost = 3
 	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainMax: 4})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "workshop", Val: 4, Type: "any"}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "workshop"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: "workshop"})
 	return c
 }
 
@@ -180,7 +180,8 @@ func DefRemodel() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddGainCost: 2})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashSet: true})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainType: "any"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: true})
+	// TODO: Fix this
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: true})
 	return c
 }
 

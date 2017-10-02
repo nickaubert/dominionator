@@ -551,19 +551,22 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				}
 			}
 		}
-		/*
-			if s.PlayAction > 0 {
-				fmt.Println("\t\t\t\t PlayAction")
-				// possible decision point here whether to play any action
-				for _, c := range cardSet {
-					fmt.Println("\t\t\t seq play action", c.Name)
-					p.InPlay.Cards = append(p.InPlay.Cards, c)
-					for j := 0; j < s.PlayAction; j++ {
-						resolveEffects(pg, c)
-					}
-				}
+		if s.GainCard != "" {
+			fmt.Println("\t\t\t\t GainCard", s.GainCard, seqVal[s.GainCard], seqType[s.GainCard])
+			c := SelectCardBuy(seqVal[s.GainCard], seqType[s.GainCard], pg.Supply)
+			if c.Name == "" {
+				fmt.Println("\t\t\t\t GainCard no card to match")
+				continue
 			}
-		*/
+			seqCard[s.GainCard] = c
+		}
+		if s.PlaceDiscard != "" {
+			fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
+			p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
+		}
+
+		//////// old style below
+
 		if s.GainMax > 0 {
 			c := SelectCardBuy(s.GainMax, "any", pg.Supply)
 			if c.Name == "" {
@@ -626,10 +629,12 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t GainType", c.Name)
 			cardSet = append(cardSet, c)
 		}
-		if s.PlaceDiscard == true {
-			fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
-			p.Discard.Cards = append(p.Discard.Cards, cardSet...)
-		}
+		/*
+			if s.PlaceDiscard == true {
+				fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
+				p.Discard.Cards = append(p.Discard.Cards, cardSet...)
+			}
+		*/
 		if s.PlaceHand == true {
 			fmt.Println("\t\t\t\t PlaceHand", len(cardSet))
 			p.Hand.Cards = append(p.Hand.Cards, cardSet...)
