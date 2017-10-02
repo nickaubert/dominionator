@@ -55,9 +55,10 @@ type Sequence struct {
 	AddCost         string
 	TrashCards      string
 	PlaceHand       string
+	AddXCoins       string // add "X" * int coins
+	GetHandMatch    string
 
 	GainMax     int    // gain card up to this cost
-	AddXCoins   int    // add "X" * int coins
 	PickEm      int    // pick this many cards (at random...)
 	SetGainCost bool   // var gainCost = cardSet[0].Cost
 	AddGainCost int    // var gainCost += this much

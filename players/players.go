@@ -521,6 +521,19 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			}
 			seqCards[s.GetHandTypeX] = cs
 		}
+		if s.GetHandMatch != "" {
+			// TODO: set count
+			fmt.Println("\t\t\t\t GetHandMatch", s.GetHandMatch, seqCard[s.GetHandMatch].Name)
+			fmt.Println("\t\t\t\t GetHandMatch set1", showQuick(seqCards[s.GetHandMatch]))
+			mc := findCards(p.Hand.Cards, seqCard[s.GetHandMatch], 1)
+			fmt.Println("\t\t\t\t GetHandMatch cs", showQuick(mc))
+			var cs []cd.Card
+			if len(mc) > 0 {
+				cs = append(cs, mc[0])
+			}
+			seqCards[s.GetHandMatch] = cs
+			fmt.Println("\t\t\t\t GetHandMatch set2", showQuick(seqCards[s.GetHandMatch]))
+		}
 		if s.DrawDeck != "" {
 			fmt.Println("\t\t\t\t DrawDeck", s.DrawDeck, seqVal[s.DrawDeck])
 			var cs []cd.Card
@@ -592,6 +605,10 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				getCard(&p.Hand, c) // remove from hand
 				pg.Trash.Cards = append(pg.Trash.Cards, c)
 			}
+		}
+		if s.AddXCoins != "" {
+			fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins, seqVal[s.AddXCoins])
+			pg.ThisTurn.Coins += (len(seqCards[s.AddXCoins]) * seqVal[s.AddXCoins])
 		}
 
 		//////// old style below
@@ -674,10 +691,12 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				cardSet = append(cardSet, c)
 			}
 		}
-		if s.AddXCoins > 0 {
-			fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
-			pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
-		}
+		/*
+			if s.AddXCoins > 0 {
+				fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
+				pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
+			}
+		*/
 	}
 }
 

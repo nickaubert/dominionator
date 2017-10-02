@@ -197,23 +197,6 @@ func DefMine() cd.Card {
 	return c
 }
 
-/*
-func DefMine() cd.Card {
-	var c cd.Card
-	c.Name = "Mine"
-	c.Cost = 5
-	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "treasure"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PickEm: 1})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetGainCost: true})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddGainCost: 3})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashSet: true})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainType: "treasure"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHand: true})
-	return c
-}
-*/
-
 func DefGardens() cd.Card {
 	var c cd.Card
 	c.Name = "Gardens"
@@ -272,8 +255,13 @@ func DefMoneylender() cd.Card {
 	c.Name = "Moneylender"
 	c.Cost = 4
 	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{MayTrash: DefCopper()})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: 3})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{MayTrash: DefCopper()})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: 3})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "moneylender"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "moneylender", Card: DefCopper(), Val: 3}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandMatch: "moneylender"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: "moneylender"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "moneylender"})
 	return c
 }
 
