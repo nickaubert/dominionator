@@ -437,7 +437,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
-	var gainCost int
+	// var gainCost int
 	seqCards := make(map[string][]cd.Card)
 	seqCard := make(map[string]cd.Card)
 	seqVal := make(map[string]int)
@@ -613,89 +613,87 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 
 		//////// old style below
 
-		if s.GainMax > 0 {
-			c := SelectCardBuy(s.GainMax, "any", pg.Supply)
-			if c.Name == "" {
-				fmt.Println("\t\t\t\t GainMax", s.GainMax, "no card to match")
-				continue
-			}
-			c = gainCard(&pg.Supply, c)
-			if c.Name == "" {
-				panic(fmt.Sprintf("ERROR: missing gainmax card! %s %v", c, pg.Supply))
-			}
-			p.Discard.Cards = append(p.Discard.Cards, c)
-			fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
-		}
-		if s.GetHandType != "" {
-			// TODO: return mulitple cards
-			fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
-			vc := findCardType(p.Hand.Cards, s.GetHandType)
-			if len(vc) > 0 {
-				cardSet = append(cardSet, vc[0])
-			}
-		}
-		if s.PickEm > 0 {
-			// decision point here yes very much
-			fmt.Println("\t\t\t\t PickEm", s.PickEm)
-			if len(cardSet) > 0 {
-				rand.Seed(time.Now().UnixNano())
-				r := rand.Intn(len(cardSet))
-				cardSet = append(cardSet[:0], cardSet[r])
-			}
-		}
-		if s.SetGainCost == true {
-			if len(cardSet) > 0 {
-				gainCost = cardSet[0].Cost
-			}
-		}
-		if s.AddGainCost > 0 {
-			gainCost += s.AddGainCost
-		}
-		if s.TrashSet == true {
-			fmt.Println("\t\t\t\t TrashSet", len(cardSet))
-			if len(cardSet) > 0 {
-				fmt.Println("\t\t\t\t trashing", cardSet[0].Name)
-			}
-			for _, c := range cardSet {
-				getCard(&p.Hand, c) // remove from hand
-				pg.Trash.Cards = append(pg.Trash.Cards, c)
-			}
-			cardSet = cardSet[:0] // make sequence for this?
-		}
-		if s.GainType != "" {
-			c := SelectCardBuy(gainCost, s.GainType, pg.Supply)
-			if c.Name == "" {
-				fmt.Println("\t\t\t\t GainType", s.GainType, "no card to match")
-				continue
-			}
-			c = gainCard(&pg.Supply, c)
-			if c.Name == "" {
-				panic(fmt.Sprintf("ERROR: missing GainType card! %s %v", c, pg.Supply))
-			}
-			fmt.Println("\t\t\t\t GainType", c.Name)
-			cardSet = append(cardSet, c)
-		}
 		/*
-			if s.PlaceDiscard == true {
-				fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
-				p.Discard.Cards = append(p.Discard.Cards, cardSet...)
+			if s.GainMax > 0 {
+				c := SelectCardBuy(s.GainMax, "any", pg.Supply)
+				if c.Name == "" {
+					fmt.Println("\t\t\t\t GainMax", s.GainMax, "no card to match")
+					continue
+				}
+				c = gainCard(&pg.Supply, c)
+				if c.Name == "" {
+					panic(fmt.Sprintf("ERROR: missing gainmax card! %s %v", c, pg.Supply))
+				}
+				p.Discard.Cards = append(p.Discard.Cards, c)
+				fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
 			}
-		*/
-		if s.MayTrash.Name != "" {
-			fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
-			// decision point whether to trash here
-			cs := findCards(p.Hand.Cards, s.MayTrash, 1)
-			if len(cs) > 0 {
-				c := getCard(&p.Hand, s.MayTrash)
-				pg.Trash.Cards = append(pg.Trash.Cards, c)
+			if s.PickEm > 0 {
+				// decision point here yes very much
+				fmt.Println("\t\t\t\t PickEm", s.PickEm)
+				if len(cardSet) > 0 {
+					rand.Seed(time.Now().UnixNano())
+					r := rand.Intn(len(cardSet))
+					cardSet = append(cardSet[:0], cardSet[r])
+				}
+			}
+			if s.SetGainCost == true {
+				if len(cardSet) > 0 {
+					gainCost = cardSet[0].Cost
+				}
+			}
+			if s.AddGainCost > 0 {
+				gainCost += s.AddGainCost
+			}
+			if s.TrashSet == true {
+				fmt.Println("\t\t\t\t TrashSet", len(cardSet))
+				if len(cardSet) > 0 {
+					fmt.Println("\t\t\t\t trashing", cardSet[0].Name)
+				}
+				for _, c := range cardSet {
+					getCard(&p.Hand, c) // remove from hand
+					pg.Trash.Cards = append(pg.Trash.Cards, c)
+				}
+				cardSet = cardSet[:0] // make sequence for this?
+			}
+			if s.GainType != "" {
+				c := SelectCardBuy(gainCost, s.GainType, pg.Supply)
+				if c.Name == "" {
+					fmt.Println("\t\t\t\t GainType", s.GainType, "no card to match")
+					continue
+				}
+				c = gainCard(&pg.Supply, c)
+				if c.Name == "" {
+					panic(fmt.Sprintf("ERROR: missing GainType card! %s %v", c, pg.Supply))
+				}
+				fmt.Println("\t\t\t\t GainType", c.Name)
 				cardSet = append(cardSet, c)
 			}
-		}
-		/*
-			if s.AddXCoins > 0 {
-				fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
-				pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
+			if s.MayTrash.Name != "" {
+				fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
+				// decision point whether to trash here
+				cs := findCards(p.Hand.Cards, s.MayTrash, 1)
+				if len(cs) > 0 {
+					c := getCard(&p.Hand, s.MayTrash)
+					pg.Trash.Cards = append(pg.Trash.Cards, c)
+					cardSet = append(cardSet, c)
+				}
 			}
+			if s.GetHandType != "" {
+				// TODO: return mulitple cards
+				fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
+				vc := findCardType(p.Hand.Cards, s.GetHandType)
+				if len(vc) > 0 {
+					cardSet = append(cardSet, vc[0])
+				}
+			}
+				if s.PlaceDiscard == true {
+					fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
+					p.Discard.Cards = append(p.Discard.Cards, cardSet...)
+				}
+				if s.AddXCoins > 0 {
+					fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
+					pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
+				}
 		*/
 	}
 }
