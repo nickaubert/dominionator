@@ -36,7 +36,10 @@ type Effect struct {
 }
 
 type Sequence struct {
-	SetVal          SeqVar // set value
+	SetVal SeqVar // set value
+	// CopyVal         SeqVar // copy value
+	// GetCost         string
+	// AddVal          string
 	CountDiscard    string // max cards to discard
 	DrawCount       string // Draw "X" cards
 	TrashMax        string // max cards to trash
@@ -49,6 +52,8 @@ type Sequence struct {
 	DiscardNonMatch string // discard non-matching cards from set
 	PlayAction      string // play action this many times
 	GainCard        string
+	AddCost         string
+	TrashCards      string
 
 	GainMax     int    // gain card up to this cost
 	AddXCoins   int    // add "X" * int coins
@@ -68,10 +73,11 @@ type Sequence struct {
 }
 
 type SeqVar struct {
-	Name string
-	Val  int
-	Card Card
-	Type string
+	Name    string
+	Val     int
+	Card    Card
+	Type    string
+	NewName string
 }
 
 type Attack struct {

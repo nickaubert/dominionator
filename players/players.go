@@ -445,12 +445,18 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	for i, s := range seq {
 		fmt.Println("\t\t\t Sequence", i)
 		if s.SetVal.Name != "" {
-			fmt.Println("\t\t\t\t SetVal", s.SetVal.Name, "type", s.SetVal.Type)
+			fmt.Println("\t\t\t\t SetVal", s.SetVal.Name)
 			seqVal[s.SetVal.Name] = s.SetVal.Val
 			seqType[s.SetVal.Name] = s.SetVal.Type
 			seqCard[s.SetVal.Name] = s.SetVal.Card
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
+		/*
+		        if s.CopyVal.Name != "" {
+					fmt.Println("\t\t\t\t CopyVal", s.CopyVal.Name, s.CopyVal.NewName)
+					seqVal[s.CopyVal.NewName] = seqVal[s.CopyVal.Name]
+		        }
+		*/
 		if s.CountDiscard != "" {
 			// decision point here
 			vc := findCardType(p.Hand.Cards, "nonUsable")
@@ -563,6 +569,23 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		if s.PlaceDiscard != "" {
 			fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
 			p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
+		}
+		if s.AddCost != "" {
+			o := 0
+			for _, c := range seqCards[s.AddCost] {
+				fmt.Println("\t\t\t\t AddCost", s.AddCost, c.Name)
+				o += c.Cost
+			}
+			seqVal[s.AddCost] += o
+		}
+		if s.TrashCards != "" {
+			for _, c := range seqCards[s.TrashCards] {
+				// removeFromHand(p, u)
+				// trashFromHand(p, pg, u)
+				fmt.Println("\t\t\t\t TrashCards", c.Name)
+				getCard(&p.Hand, c) // remove from hand
+				pg.Trash.Cards = append(pg.Trash.Cards, c)
+			}
 		}
 
 		//////// old style below
@@ -859,7 +882,7 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 
 	return s
 }
