@@ -401,7 +401,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	// var gainCost int
 	seqCards := make(map[string][]cd.Card)
-	seqCard := make(map[string]cd.Card)
+	seqCardX := make(map[string]cd.Card)
 	seqVal := make(map[string]int)
 	seqType := make(map[string]string)
 	for i, s := range seq {
@@ -410,7 +410,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t SetVal", s.SetVal.Name)
 			seqVal[s.SetVal.Name] = s.SetVal.Val
 			seqType[s.SetVal.Name] = s.SetVal.Type
-			seqCard[s.SetVal.Name] = s.SetVal.Card
+			seqCardX[s.SetVal.Name] = s.SetVal.Card
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
 		/*
@@ -460,7 +460,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.GetSupplyCard != "" {
 			fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard)
-			c := gainCard(&pg.Supply, seqCard[s.GetSupplyCard])
+			c := gainCard(&pg.Supply, seqCardX[s.GetSupplyCard])
 			if c.Name == "" {
 				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard, "no card to match")
 				continue
@@ -469,30 +469,39 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			cs = append(cs, c)
 			seqCards[s.GetSupplyCard] = cs
 		}
-		if s.GetHandTypeX != "" {
-			// TODO: set count
-			vc := findCardType(p.Hand.Cards, seqType[s.GetHandTypeX])
-			var cs []cd.Card
-			if len(vc) > 0 {
-				cs = append(cs, vc[0])
+		/*
+			if s.GetHandTypeX != "" {
+				// TODO: set count
+				vc := findCardType(p.Hand.Cards, seqType[s.GetHandTypeX])
+				var cs []cd.Card
+				if len(vc) > 0 {
+					cs = append(cs, vc[0])
+				}
+				fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX], "found", showQuick(cs))
+				seqCards[s.GetHandTypeX] = cs
 			}
-			fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX], "found", showQuick(cs))
-			seqCards[s.GetHandTypeX] = cs
-		}
+		*/
 		if s.GetHandType != "" {
 			vc := findCardType(p.Hand.Cards, seqType[s.GetHandType])
-			var cs []cd.Card
-			if len(vc) > 0 {
-				cs = append(cs, vc...)
+			if len(vc) == 0 {
+				fmt.Println("\t\t\t\t GetHandType", s.GetHandType, seqType[s.GetHandType], "no match")
 			}
+			maxCards := len(vc)
+			if seqVal[s.GetHandType] > 0 {
+				if seqVal[s.GetHandType] < maxCards {
+					maxCards = seqVal[s.GetHandType]
+				}
+			}
+			var cs []cd.Card
+			cs = append(cs, vc[:maxCards]...)
 			fmt.Println("\t\t\t\t GetHandType", s.GetHandType, seqType[s.GetHandType], "found", showQuick(cs))
 			seqCards[s.GetHandType] = cs
 		}
 		if s.GetHandMatch != "" {
 			// TODO: set count
-			fmt.Println("\t\t\t\t GetHandMatch", s.GetHandMatch, seqCard[s.GetHandMatch].Name)
+			fmt.Println("\t\t\t\t GetHandMatch", s.GetHandMatch, seqCardX[s.GetHandMatch].Name)
 			fmt.Println("\t\t\t\t GetHandMatch set1", showQuick(seqCards[s.GetHandMatch]))
-			mc := findCards(p.Hand.Cards, seqCard[s.GetHandMatch], 1)
+			mc := findCards(p.Hand.Cards, seqCardX[s.GetHandMatch], 1)
 			fmt.Println("\t\t\t\t GetHandMatch cs", showQuick(mc))
 			var cs []cd.Card
 			if len(mc) > 0 {
@@ -533,27 +542,23 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				fmt.Println("\t\t\t\t GainCard no card to match")
 				continue
 			}
-			fmt.Println("\t\t\t\t seqCard", showQuick(seqCards[s.GainCard]), len(seqCards[s.GainCard]), "gained", c.Name)
+			fmt.Println("\t\t\t\t seqCards", showQuick(seqCards[s.GainCard]), len(seqCards[s.GainCard]), "gained", c.Name)
 			seqCards[s.GainCard] = append(seqCards[s.GainCard], c)
 		}
-		/*
-			if s.PlaceDiscard != "" {
-				fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
-				p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
-			}
-		*/
 		if s.PlaceDiscards != "" {
 			fmt.Println("\t\t\t\t PlaceDiscards", s.PlaceDiscards, showQuick(seqCards[s.PlaceDiscards]))
 			if len(seqCards[s.PlaceDiscards]) > 0 {
 				p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
 			}
 		}
-		if s.PlaceHand != "" {
-			fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCard[s.PlaceHand].Name)
-			p.Hand.Cards = append(p.Hand.Cards, seqCard[s.PlaceHand])
-		}
+		/*
+			if s.PlaceHand != "" {
+				fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCardX[s.PlaceHand].Name)
+				p.Hand.Cards = append(p.Hand.Cards, seqCardX[s.PlaceHand])
+			}
+		*/
 		if s.PlaceHands != "" {
-			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCard[s.PlaceHands].Name)
+			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCardX[s.PlaceHands].Name)
 			if len(seqCards[s.PlaceHands]) > 0 {
 				p.Hand.Cards = append(p.Hand.Cards, seqCards[s.PlaceHands]...)
 			}

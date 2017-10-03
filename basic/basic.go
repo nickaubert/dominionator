@@ -137,7 +137,7 @@ func DefBureaucrat() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: "silver"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "silver"})
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "putdeck", Type: "victory", Val: 1}})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandTypeX: "putdeck"})
+	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "putdeck"})
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: "putdeck"})
 	// or reveals a hand with no victory cards...
 	return c
@@ -182,8 +182,9 @@ func DefRemodel() cd.Card {
 	c.Name = "Remodel"
 	c.Cost = 4
 	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 1}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 2}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "remodel"})
@@ -197,8 +198,9 @@ func DefMine() cd.Card {
 	c.Name = "Mine"
 	c.Cost = 5
 	c.CTypes.Action = true
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "mine", Type: "treasure", Val: 1}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "mine", Type: "treasure", Val: 3}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "mine"})
@@ -265,9 +267,6 @@ func DefMoneylender() cd.Card {
 	c.Name = "Moneylender"
 	c.Cost = 4
 	c.CTypes.Action = true
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{MayTrash: DefCopper()})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: 3})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "moneylender"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "moneylender", Card: DefCopper(), Val: 3}})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandMatch: "moneylender"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddXCoins: "moneylender"})
