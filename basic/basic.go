@@ -162,8 +162,9 @@ func DefWorkshop() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "workshop", Val: 4, Type: "any"}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "workshop"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "workshop"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: "workshop"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "workshop"})
 	return c
 }
 
@@ -185,8 +186,9 @@ func DefRemodel() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "remodel"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscard: "remodel"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "remodel"})
 	return c
 }
 
@@ -199,8 +201,9 @@ func DefMine() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandTypeX: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "mine"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "mine"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHand: "mine"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHands: "mine"})
 	return c
 }
 

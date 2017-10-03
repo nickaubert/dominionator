@@ -413,18 +413,20 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			seqCard[s.SetVal.Name] = s.SetVal.Card
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
-		if s.CountDiscard != "" {
-			// decision point here
-			vc := findCardType(p.Hand.Cards, "nonUsable")
-			discardCards(p, vc)
-			seqVal[s.CountDiscard] = len(vc)
-			fmt.Println("\t\t\t\t CountDiscard", seqVal[s.CountDiscard])
-		}
-		if s.DrawCount != "" {
-			nc := Draw(p, seqVal[s.DrawCount])
-			p.Hand.Cards = append(p.Hand.Cards, nc...)
-			fmt.Println("\t\t\t\t DrawCount", seqVal[s.DrawCount])
-		}
+		/*
+			if s.CountDiscard != "" {
+				// decision point here
+				vc := findCardType(p.Hand.Cards, "nonUsable")
+				discardCards(p, vc)
+				seqVal[s.CountDiscard] = len(vc)
+				fmt.Println("\t\t\t\t CountDiscard", seqVal[s.CountDiscard])
+			}
+			if s.DrawCount != "" {
+				nc := Draw(p, seqVal[s.DrawCount])
+				p.Hand.Cards = append(p.Hand.Cards, nc...)
+				fmt.Println("\t\t\t\t DrawCount", seqVal[s.DrawCount])
+			}
+		*/
 		if s.TrashMax != "" {
 			// decision point here
 			cc := findCardType(p.Hand.Cards, "curse")
@@ -531,15 +533,20 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				fmt.Println("\t\t\t\t GainCard no card to match")
 				continue
 			}
-			seqCard[s.GainCard] = c
+			fmt.Println("\t\t\t\t seqCard", showQuick(seqCards[s.GainCard]), len(seqCards[s.GainCard]), "gained", c.Name)
+			seqCards[s.GainCard] = append(seqCards[s.GainCard], c)
 		}
-		if s.PlaceDiscard != "" {
-			fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
-			p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
-		}
+		/*
+			if s.PlaceDiscard != "" {
+				fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
+				p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
+			}
+		*/
 		if s.PlaceDiscards != "" {
 			fmt.Println("\t\t\t\t PlaceDiscards", s.PlaceDiscards, showQuick(seqCards[s.PlaceDiscards]))
-			p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
+			if len(seqCards[s.PlaceDiscards]) > 0 {
+				p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
+			}
 		}
 		if s.PlaceHand != "" {
 			fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCard[s.PlaceHand].Name)
@@ -547,7 +554,9 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.PlaceHands != "" {
 			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCard[s.PlaceHands].Name)
-			p.Hand.Cards = append(p.Hand.Cards, seqCards[s.PlaceHands]...)
+			if len(seqCards[s.PlaceHands]) > 0 {
+				p.Hand.Cards = append(p.Hand.Cards, seqCards[s.PlaceHands]...)
+			}
 		}
 		if s.AddCost != "" {
 			o := 0

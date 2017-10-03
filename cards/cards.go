@@ -36,13 +36,13 @@ type Effect struct {
 }
 
 type Sequence struct {
-	SetVal          SeqVar // set value
-	CountDiscard    string // max cards to discard
-	DrawCount       string // Draw "X" cards
+	SetVal SeqVar // set value
+	// CountDiscard    string // max cards to discard
+	// DrawCount       string // Draw "X" cards
 	TrashMax        string // max cards to trash
 	RetrieveDiscard string // max cards to pull from discard
 	PlaceDeck       string // Place cards onto deck
-	PlaceDiscard    string // place one card in discard
+	// PlaceDiscard    string // place one card in discard
 	PlaceDiscards   string // place cardSet in discard
 	GetSupplyCard   string // get this card from supply
 	GetHandTypeX    string // get one of this card type from hand
