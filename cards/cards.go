@@ -36,41 +36,30 @@ type Effect struct {
 }
 
 type Sequence struct {
-	SetVal SeqVar // set value
-	// CopyVal         SeqVar // copy value
-	// GetCost         string
-	// AddVal          string
+	SetVal          SeqVar // set value
 	CountDiscard    string // max cards to discard
 	DrawCount       string // Draw "X" cards
 	TrashMax        string // max cards to trash
 	RetrieveDiscard string // max cards to pull from discard
 	PlaceDeck       string // Place cards onto deck
-	PlaceDiscard    string // place cardSet in discard
+	PlaceDiscard    string // place one card in discard
+	PlaceDiscards   string // place cardSet in discard
 	GetSupplyCard   string // get this card from supply
-	GetHandTypeX    string // get any of this card type from hand
+	GetHandTypeX    string // get one of this card type from hand
+	GetHandType     string // get any of this card type from hand
 	DrawDeck        string // max cards to draw from deck
 	DiscardNonMatch string // discard non-matching cards from set
 	PlayAction      string // play action this many times
+	CountCards      string
+	ClearSet        string
 	GainCard        string
 	AddCost         string
 	TrashCards      string
 	PlaceHand       string
+	PlaceHands      string
 	AddXCoins       string // add "X" * int coins
 	GetHandMatch    string
-
-	// GainMax     int    // gain card up to this cost
-	// PickEm      int    // pick this many cards (at random...)
-	// SetGainCost bool   // var gainCost = cardSet[0].Cost
-	// AddGainCost int    // var gainCost += this much
-	// TrashSet    bool   // trash cardSet
-	// GainType    string // select this type from supply with max cost
-	// MayTrash    Card   // may trash this card from hand
-	// GetHandType string // get any of this card type from hand
-	// UpgradePlus     int    // upgrade cardSet[0].Cost + this
-	// UpgradeType Plus int    // upgrade cardSet[0].Cost + this
-	// SetGainType     string // var gainType to this type
-	// UpgradeBy       int    // trash and upgrade by this much
-	// SelectType      string // select one of this type from hand
+	RemoveFromHand  string
 }
 
 type SeqVar struct {

@@ -275,44 +275,6 @@ func findCardType(h []cd.Card, t string) []cd.Card {
 		if matchType(c, t) {
 			cs = append(cs, c)
 		}
-		/*
-			switch t {
-			case "any":
-				cs = append(cs, c)
-			case "action":
-				if c.CTypes.Action == true {
-					cs = append(cs, c)
-				}
-			case "reaction":
-				if c.CTypes.Reaction == true {
-					cs = append(cs, c)
-				}
-			case "treasure":
-				if c.CTypes.Treasure == true {
-					cs = append(cs, c)
-				}
-			case "victory":
-				if c.CTypes.Victory == true {
-					cs = append(cs, c)
-				}
-			case "curse":
-				if c.CTypes.Curse == true {
-					cs = append(cs, c)
-				}
-			case "actionExtra":
-				if c.CTypes.Action == true {
-					if c.Effects.ExtraActions > 0 {
-						cs = append(cs, c)
-					}
-				}
-			case "nonUsable":
-				if c.CTypes.Action == false {
-					if c.CTypes.Treasure == false {
-						cs = append(cs, c)
-					}
-				}
-			}
-		*/
 	}
 	return cs
 }
@@ -451,12 +413,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			seqCard[s.SetVal.Name] = s.SetVal.Card
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
-		/*
-			        if s.CopyVal.Name != "" {
-						fmt.Println("\t\t\t\t CopyVal", s.CopyVal.Name, s.CopyVal.NewName)
-						seqVal[s.CopyVal.NewName] = seqVal[s.CopyVal.Name]
-			        }
-		*/
 		if s.CountDiscard != "" {
 			// decision point here
 			vc := findCardType(p.Hand.Cards, "nonUsable")
@@ -513,13 +469,22 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.GetHandTypeX != "" {
 			// TODO: set count
-			fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX])
 			vc := findCardType(p.Hand.Cards, seqType[s.GetHandTypeX])
 			var cs []cd.Card
 			if len(vc) > 0 {
 				cs = append(cs, vc[0])
 			}
+			fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX], "found", showQuick(cs))
 			seqCards[s.GetHandTypeX] = cs
+		}
+		if s.GetHandType != "" {
+			vc := findCardType(p.Hand.Cards, seqType[s.GetHandType])
+			var cs []cd.Card
+			if len(vc) > 0 {
+				cs = append(cs, vc...)
+			}
+			fmt.Println("\t\t\t\t GetHandType", s.GetHandType, seqType[s.GetHandType], "found", showQuick(cs))
+			seqCards[s.GetHandType] = cs
 		}
 		if s.GetHandMatch != "" {
 			// TODO: set count
@@ -541,23 +506,12 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			seqCards[s.DrawDeck] = cs
 			fmt.Println("\t\t\t\t drew", showQuick(cs))
 		}
-		/*
-			if s.DrawDeck > 0 {
-				fmt.Println("\t\t\t\t DrawDeck")
-				cardSet = append(cardSet, Draw(p, s.DrawDeck)...)
-			}
-		*/
 		if s.DiscardNonMatch != "" {
 			fmt.Println("\t\t\t\t DiscardNonMatch", s.DiscardNonMatch, seqType[s.DiscardNonMatch])
 			var oldSet Cards
 			oldSet.Cards = seqCards[s.DiscardNonMatch]
 			seqCards[s.DiscardNonMatch] = getCards(&oldSet, findCardType(oldSet.Cards, seqType[s.DiscardNonMatch]))
 			p.Discard.Cards = append(p.Discard.Cards, oldSet.Cards...)
-			// discardCards(p, oldSet.Cards)
-			// var oldSet Cards
-			// oldSet.Cards = cardSet
-			// cardSet = getCards(&oldSet, findCardType(oldSet.Cards, seqType[s.DiscardNonMatch]))
-			// discardCards(p, oldSet.Cards)
 		}
 		if s.PlayAction != "" {
 			fmt.Println("\t\t\t\t PlayAction", s.PlayAction, seqVal[s.PlayAction])
@@ -583,11 +537,17 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t PlaceDiscard", s.PlaceDiscard, seqCard[s.PlaceDiscard].Name)
 			p.Discard.Cards = append(p.Discard.Cards, seqCard[s.PlaceDiscard])
 		}
+		if s.PlaceDiscards != "" {
+			fmt.Println("\t\t\t\t PlaceDiscards", s.PlaceDiscards, showQuick(seqCards[s.PlaceDiscards]))
+			p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
+		}
 		if s.PlaceHand != "" {
-			// fmt.Println("\t\t\t\t PlaceHand", len(cardSet))
-			// p.Hand.Cards = append(p.Hand.Cards, cardSet...)
 			fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCard[s.PlaceHand].Name)
 			p.Hand.Cards = append(p.Hand.Cards, seqCard[s.PlaceHand])
+		}
+		if s.PlaceHands != "" {
+			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCard[s.PlaceHands].Name)
+			p.Hand.Cards = append(p.Hand.Cards, seqCards[s.PlaceHands]...)
 		}
 		if s.AddCost != "" {
 			o := 0
@@ -599,8 +559,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 		if s.TrashCards != "" {
 			for _, c := range seqCards[s.TrashCards] {
-				// removeFromHand(p, u)
-				// trashFromHand(p, pg, u)
 				fmt.Println("\t\t\t\t TrashCards", c.Name)
 				getCard(&p.Hand, c) // remove from hand
 				pg.Trash.Cards = append(pg.Trash.Cards, c)
@@ -610,91 +568,18 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins, seqVal[s.AddXCoins])
 			pg.ThisTurn.Coins += (len(seqCards[s.AddXCoins]) * seqVal[s.AddXCoins])
 		}
-
-		//////// old style below
-
-		/*
-			if s.GainMax > 0 {
-				c := SelectCardBuy(s.GainMax, "any", pg.Supply)
-				if c.Name == "" {
-					fmt.Println("\t\t\t\t GainMax", s.GainMax, "no card to match")
-					continue
-				}
-				c = gainCard(&pg.Supply, c)
-				if c.Name == "" {
-					panic(fmt.Sprintf("ERROR: missing gainmax card! %s %v", c, pg.Supply))
-				}
-				p.Discard.Cards = append(p.Discard.Cards, c)
-				fmt.Println("\t\t\t\t GainMax", s.GainMax, c.Name)
-			}
-			if s.PickEm > 0 {
-				// decision point here yes very much
-				fmt.Println("\t\t\t\t PickEm", s.PickEm)
-				if len(cardSet) > 0 {
-					rand.Seed(time.Now().UnixNano())
-					r := rand.Intn(len(cardSet))
-					cardSet = append(cardSet[:0], cardSet[r])
-				}
-			}
-			if s.SetGainCost == true {
-				if len(cardSet) > 0 {
-					gainCost = cardSet[0].Cost
-				}
-			}
-			if s.AddGainCost > 0 {
-				gainCost += s.AddGainCost
-			}
-			if s.TrashSet == true {
-				fmt.Println("\t\t\t\t TrashSet", len(cardSet))
-				if len(cardSet) > 0 {
-					fmt.Println("\t\t\t\t trashing", cardSet[0].Name)
-				}
-				for _, c := range cardSet {
-					getCard(&p.Hand, c) // remove from hand
-					pg.Trash.Cards = append(pg.Trash.Cards, c)
-				}
-				cardSet = cardSet[:0] // make sequence for this?
-			}
-			if s.GainType != "" {
-				c := SelectCardBuy(gainCost, s.GainType, pg.Supply)
-				if c.Name == "" {
-					fmt.Println("\t\t\t\t GainType", s.GainType, "no card to match")
-					continue
-				}
-				c = gainCard(&pg.Supply, c)
-				if c.Name == "" {
-					panic(fmt.Sprintf("ERROR: missing GainType card! %s %v", c, pg.Supply))
-				}
-				fmt.Println("\t\t\t\t GainType", c.Name)
-				cardSet = append(cardSet, c)
-			}
-			if s.MayTrash.Name != "" {
-				fmt.Println("\t\t\t\t MayTrash", s.MayTrash.Name)
-				// decision point whether to trash here
-				cs := findCards(p.Hand.Cards, s.MayTrash, 1)
-				if len(cs) > 0 {
-					c := getCard(&p.Hand, s.MayTrash)
-					pg.Trash.Cards = append(pg.Trash.Cards, c)
-					cardSet = append(cardSet, c)
-				}
-			}
-			if s.GetHandType != "" {
-				// TODO: return mulitple cards
-				fmt.Println("\t\t\t\t GetHandType", s.GetHandType)
-				vc := findCardType(p.Hand.Cards, s.GetHandType)
-				if len(vc) > 0 {
-					cardSet = append(cardSet, vc[0])
-				}
-			}
-				if s.PlaceDiscard == true {
-					fmt.Println("\t\t\t\t PlaceDiscard", len(cardSet))
-					p.Discard.Cards = append(p.Discard.Cards, cardSet...)
-				}
-				if s.AddXCoins > 0 {
-					fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins)
-					pg.ThisTurn.Coins += (len(cardSet) * s.AddXCoins)
-				}
-		*/
+		if s.CountCards != "" {
+			seqVal[s.CountCards] = len(seqCards[s.CountCards])
+			fmt.Println("\t\t\t\t CountCards", s.CountCards, seqVal[s.CountCards])
+		}
+		if s.ClearSet != "" {
+			fmt.Println("\t\t\t\t ClearSet", s.ClearSet)
+			seqCards[s.ClearSet] = seqCards[s.ClearSet][:0]
+		}
+		if s.RemoveFromHand != "" {
+			fmt.Println("\t\t\t\t RemoveFromHand", s.RemoveFromHand, showQuick(seqCards[s.RemoveFromHand]))
+			getCards(&p.Hand, seqCards[s.RemoveFromHand]) // remove from hand
+		}
 	}
 }
 

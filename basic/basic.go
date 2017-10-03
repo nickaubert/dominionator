@@ -81,8 +81,15 @@ func DefCellar() cd.Card {
 	c.Cost = 2
 	c.CTypes.Action = true
 	c.Effects.ExtraActions = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountDiscard: "discards"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawCount: "discards"})
+	// actually nonUsable should be a decision point
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "cellar", Type: "nonUsable"}})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RemoveFromHand: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountCards: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "cellar"})
+	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHands: "cellar"})
 	return c
 }
 
