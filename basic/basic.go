@@ -65,6 +65,101 @@ func DefCurse() cd.Card {
 	return c
 }
 
+func DefVillage() cd.Card {
+	var c cd.Card
+	c.Name = "Village"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.DrawCard = 1
+	c.Effects.ExtraActions = 2
+	return c
+}
+
+func DefSmithy() cd.Card {
+	var c cd.Card
+	c.Name = "Smithy"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.Effects.DrawCard = 3
+	return c
+}
+
+func DefFestival() cd.Card {
+	var c cd.Card
+	c.Name = "Festival"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.Effects.ExtraActions = 2
+	c.Effects.ExtraBuys = 1
+	c.Effects.ExtraCoins = 2
+	return c
+}
+
+func DefLaboratory() cd.Card {
+	var c cd.Card
+	c.Name = "Laboratory"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.Effects.DrawCard = 2
+	c.Effects.ExtraActions = 1
+	return c
+}
+
+func DefMarket() cd.Card {
+	var c cd.Card
+	c.Name = "Market"
+	c.Cost = 5
+	c.CTypes.Action = true
+	c.Effects.DrawCard = 1
+	c.Effects.ExtraActions = 1
+	c.Effects.ExtraBuys = 1
+	c.Effects.ExtraCoins = 1
+	return c
+}
+
+func DefCellar() cd.Card {
+	var c cd.Card
+	c.Name = "Cellar"
+	c.Cost = 2
+	c.CTypes.Action = true
+	c.Effects.ExtraActions = 1
+	// actually nonUsable should be a decision point
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "nonUsable", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHand", "unusables"}})
+	c.Effects.Sequence = sq
+	/*
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"getHandType", "nonUsable", "unusables"} })
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"removeFromHand", "unusables"} })
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"countCards", "unusables", "cardCount"} })
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"placeDiscards", "unusables"} })
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"drawDeck", "cardCount", "newCards"} })
+		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"placeHand", "newCards"} })
+	*/
+
+	/*
+	   "getHandType", "nonUsable", "unusables"
+	    "removeFromHand", "unusables"
+	    "countCards", "unusables", "cardCount"
+	    "placeDiscards", "unusables"
+	    "drawDeck", "cardCount", "newCards"
+	    "placeHand", "newCards"
+	*/
+
+	/*
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "cellar", Type: "nonUsable"}})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RemoveFromHand: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountCards: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "cellar"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHands: "cellar"})
+	*/
+	return c
+}
+
+/*
 func DefChapel() cd.Card {
 	var c cd.Card
 	c.Name = "Chapel"
@@ -101,16 +196,6 @@ func DefMoat() cd.Card {
 	c.CTypes.Reaction = true
 	c.Effects.DrawCard = 2
 	c.Reactions.Defend = true
-	return c
-}
-
-func DefVillage() cd.Card {
-	var c cd.Card
-	c.Name = "Village"
-	c.Cost = 3
-	c.CTypes.Action = true
-	c.Effects.DrawCard = 1
-	c.Effects.ExtraActions = 2
 	return c
 }
 
@@ -168,15 +253,6 @@ func DefWorkshop() cd.Card {
 	return c
 }
 
-func DefSmithy() cd.Card {
-	var c cd.Card
-	c.Name = "Smithy"
-	c.Cost = 4
-	c.CTypes.Action = true
-	c.Effects.DrawCard = 3
-	return c
-}
-
 func DefRemodel() cd.Card {
 	var c cd.Card
 	c.Name = "Remodel"
@@ -215,39 +291,6 @@ func DefGardens() cd.Card {
 	c.Cost = 4
 	c.CTypes.Victory = true
 	c.Victories.CardsPerPoint = 10
-	return c
-}
-
-func DefFestival() cd.Card {
-	var c cd.Card
-	c.Name = "Festival"
-	c.Cost = 5
-	c.CTypes.Action = true
-	c.Effects.ExtraActions = 2
-	c.Effects.ExtraBuys = 1
-	c.Effects.ExtraCoins = 2
-	return c
-}
-
-func DefLaboratory() cd.Card {
-	var c cd.Card
-	c.Name = "Laboratory"
-	c.Cost = 5
-	c.CTypes.Action = true
-	c.Effects.DrawCard = 2
-	c.Effects.ExtraActions = 1
-	return c
-}
-
-func DefMarket() cd.Card {
-	var c cd.Card
-	c.Name = "Market"
-	c.Cost = 5
-	c.CTypes.Action = true
-	c.Effects.DrawCard = 1
-	c.Effects.ExtraActions = 1
-	c.Effects.ExtraBuys = 1
-	c.Effects.ExtraCoins = 1
 	return c
 }
 
@@ -294,6 +337,7 @@ func DefWitch() cd.Card {
 	c.Attacks.GainCurse = 1
 	return c
 }
+*/
 
 func InitialDeck() []cd.Card {
 	var d []cd.Card

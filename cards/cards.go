@@ -27,7 +27,7 @@ type Effect struct {
 	ExtraActions int
 	ExtraBuys    int
 	ExtraCoins   int
-	Sequence     []Sequence
+	Sequence     []Seq
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
@@ -35,6 +35,28 @@ type Effect struct {
 	*/
 }
 
+/*
+   New logic: get rid of Sequence struct
+   Pass in name of operation and parameters, including names of (typed) variables
+   eg. Cellar
+           "getHandType", "nonUsable", "unusables"
+           "removeFromHand", "unusables"
+           "countCards", "unusables", "cardCount"
+           "placeDiscards", "unusables"
+           "drawDeck", "cardCount", "newCards"
+           "placeHand", "newCards"
+       first string is always operation name
+       "nonUsable" gets passed to GetCardType function
+       "unusables" is the name of a []cd.Card
+       "cardCount" is the name of an int
+       "newCards" is the name of a []cd.Card
+*/
+
+type Seq struct {
+	Seq []string
+}
+
+/*
 type Sequence struct {
 	SetVal          SeqVar // set value
 	TrashMax        string // max cards to trash
@@ -59,7 +81,9 @@ type Sequence struct {
 	GetHandMatch   string
 	RemoveFromHand string
 }
+*/
 
+/*
 type SeqVar struct {
 	Name    string
 	Val     int
@@ -67,11 +91,12 @@ type SeqVar struct {
 	Type    string
 	NewName string
 }
+*/
 
 type Attack struct {
 	DiscardTo int
 	GainCurse int
-	Sequence  []Sequence
+	Sequence  []Seq
 }
 
 type Reaction struct {

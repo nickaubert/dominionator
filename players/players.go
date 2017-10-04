@@ -397,6 +397,21 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	resolveSequence(pg, p, c.Effects.Sequence)
 }
 
+func resolveSequence(pg *Playgroup, p *Player, sequence []cd.Seq) {
+	for _, seq := range sequence {
+		op := seq.Seq[0]
+		switch op {
+		case "getHandType":
+			fmt.Println("getHandType")
+		case "removeFromHand":
+			fmt.Println("removeFromHand")
+		default:
+			fmt.Println("ERROR: No operation", op)
+		}
+	}
+}
+
+/*
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 	var cardSet []cd.Card
 	// var gainCost int
@@ -413,7 +428,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			seqCardX[s.SetVal.Name] = s.SetVal.Card
 			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
 		}
-		/*
 			if s.CountDiscard != "" {
 				// decision point here
 				vc := findCardType(p.Hand.Cards, "nonUsable")
@@ -426,7 +440,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				p.Hand.Cards = append(p.Hand.Cards, nc...)
 				fmt.Println("\t\t\t\t DrawCount", seqVal[s.DrawCount])
 			}
-		*/
 		if s.TrashMax != "" {
 			// decision point here
 			cc := findCardType(p.Hand.Cards, "curse")
@@ -469,7 +482,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 			cs = append(cs, c)
 			seqCards[s.GetSupplyCard] = cs
 		}
-		/*
 			if s.GetHandTypeX != "" {
 				// TODO: set count
 				vc := findCardType(p.Hand.Cards, seqType[s.GetHandTypeX])
@@ -480,7 +492,6 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX], "found", showQuick(cs))
 				seqCards[s.GetHandTypeX] = cs
 			}
-		*/
 		if s.GetHandType != "" {
 			vc := findCardType(p.Hand.Cards, seqType[s.GetHandType])
 			if len(vc) == 0 {
@@ -551,12 +562,10 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 				p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
 			}
 		}
-		/*
 			if s.PlaceHand != "" {
 				fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCardX[s.PlaceHand].Name)
 				p.Hand.Cards = append(p.Hand.Cards, seqCardX[s.PlaceHand])
 			}
-		*/
 		if s.PlaceHands != "" {
 			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCardX[s.PlaceHands].Name)
 			if len(seqCards[s.PlaceHands]) > 0 {
@@ -596,6 +605,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
 		}
 	}
 }
+*/
 
 func resolveAttacks(pg *Playgroup, c cd.Card) {
 	for i := range pg.Players {
@@ -615,7 +625,7 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 		if c.Attacks.GainCurse > 0 {
 			gainCurse(p, &pg.Supply, c.Attacks.GainCurse)
 		}
-		resolveSequence(pg, p, c.Attacks.Sequence)
+		// resolveSequence(pg, p, c.Attacks.Sequence)
 	}
 	fmt.Println("\t\t finished attacks")
 }
@@ -782,34 +792,37 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
 
 	/* kingdom */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
+	/*
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+	*/
 
 	return s
 }
 
+/*
 func initializeRandomizer() []cd.Card {
 
 	var rd []cd.Card
 
-	/* kingdom */
+	// kingdom
 	rd = append(rd, bs.DefCellar())
 	rd = append(rd, bs.DefChapel())
 	rd = append(rd, bs.DefMoat())
@@ -826,3 +839,4 @@ func initializeRandomizer() []cd.Card {
 
 	return rd
 }
+*/
