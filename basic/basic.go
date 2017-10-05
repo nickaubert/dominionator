@@ -65,6 +65,17 @@ func DefCurse() cd.Card {
 	return c
 }
 
+func DefMoat() cd.Card {
+	var c cd.Card
+	c.Name = "Moat"
+	c.Cost = 2
+	c.CTypes.Action = true
+	c.CTypes.Reaction = true
+	c.Effects.DrawCard = 2
+	c.Reactions.Defend = true
+	return c
+}
+
 func DefVillage() cd.Card {
 	var c cd.Card
 	c.Name = "Village"
@@ -162,35 +173,21 @@ func DefWitch() cd.Card {
 	return c
 }
 
-/*
-func DefCellar() cd.Card {
+func DefWorkshop() cd.Card {
 	var c cd.Card
-	c.Name = "Cellar"
-	c.Cost = 2
+	c.Name = "Workshop"
+	c.Cost = 3
 	c.CTypes.Action = true
-	c.Effects.ExtraActions = 1
-	// actually nonUsable should be a decision point
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "cellar", Type: "nonUsable"}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RemoveFromHand: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{CountCards: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "cellar"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHands: "cellar"})
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["newCardVal"] = 4
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"GainCard", "any", "newCardVal"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCardVal"}})
+	c.Effects.Sequence = sq
 	return c
 }
 
-func DefMoat() cd.Card {
-	var c cd.Card
-	c.Name = "Moat"
-	c.Cost = 2
-	c.CTypes.Action = true
-	c.CTypes.Reaction = true
-	c.Effects.DrawCard = 2
-	c.Reactions.Defend = true
-	return c
-}
+/*
 
 func DefHarbinger() cd.Card {
 	var c cd.Card
@@ -231,18 +228,6 @@ func DefVassal() cd.Card {
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
 	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
-	return c
-}
-
-func DefWorkshop() cd.Card {
-	var c cd.Card
-	c.Name = "Workshop"
-	c.Cost = 3
-	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "workshop", Val: 4, Type: "any"}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "workshop"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "workshop"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "workshop"})
 	return c
 }
 
