@@ -28,6 +28,7 @@ type Effect struct {
 	ExtraBuys    int
 	ExtraCoins   int
 	Sequence     []Seq
+	SeqVal       map[string]int
 	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
@@ -97,6 +98,7 @@ type Attack struct {
 	DiscardTo int
 	GainCurse int
 	Sequence  []Seq
+	SeqVal    map[string]int
 }
 
 type Reaction struct {

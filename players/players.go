@@ -399,18 +399,25 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	if c.CTypes.Attack == true {
 		resolveAttacks(pg, c)
 	}
-	resolveSequence(pg, p, c.Effects.Sequence)
+	// resolveSequence(pg, p, c.Effects.Sequence)
+	resolveSequence(pg, p, c.Effects.Sequence, c.Effects.SeqVal)
 }
 
-func resolveSequence(pg *Playgroup, p *Player, sequence []cd.Seq) {
+func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]int) {
 	seqCards := make(map[string][]cd.Card)
-	seqVal := make(map[string]int)
-	for _, seq := range sequence {
+	// seqVal := c.Effects.SeqVal
+	for _, seq := range seq {
 		op := seq.Seq[0]
 		switch op {
 		case "getHandType":
 			fmt.Println("getHandType", seq.Seq[1], seq.Seq[2])
 			seqCards[seq.Seq[2]] = findCardType(p.Hand.Cards, seq.Seq[1])
+			if seqVal[seq.Seq[2]] > 0 {
+				if seqVal[seq.Seq[2]] < len(seqCards[seq.Seq[2]]) {
+					fmt.Println("lens:", seqVal[seq.Seq[2]], len(seqCards[seq.Seq[2]]))
+					seqCards[seq.Seq[2]] = seqCards[seq.Seq[2]][:seqVal[seq.Seq[2]]]
+				}
+			}
 			fmt.Println("found", len(seqCards[seq.Seq[2]]))
 		case "removeFromHands":
 			fmt.Println("removeFromHands", seq.Seq[1], len(seqCards[seq.Seq[1]]))
@@ -423,12 +430,15 @@ func resolveSequence(pg *Playgroup, p *Player, sequence []cd.Seq) {
 			discardCards(p, seqCards[seq.Seq[1]])
 		case "drawDeck":
 			fmt.Println("drawDeck", seq.Seq[1], seq.Seq[2], seqVal[seq.Seq[1]])
-			fmt.Println("deck size:", len(p.Deck.Cards))
+			fmt.Println("deck size:", len(p.Deck.Cards), "discard size:", len(p.Discard.Cards))
 			seqCards[seq.Seq[2]] = Draw(p, seqVal[seq.Seq[1]])
 			fmt.Println("drew cards", showQuick(seqCards[seq.Seq[2]]))
 		case "placeHand":
 			fmt.Println("placeHand", seq.Seq[1], len(seqCards[seq.Seq[1]]))
 			p.Hand.Cards = append(p.Hand.Cards, seqCards[seq.Seq[1]]...)
+		case "placeTrash":
+			fmt.Println("placeTrash", seq.Seq[1], len(seqCards[seq.Seq[1]]))
+			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[seq.Seq[1]]...)
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -649,7 +659,7 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 		if c.Attacks.GainCurse > 0 {
 			gainCurse(p, &pg.Supply, c.Attacks.GainCurse)
 		}
-		// resolveSequence(pg, p, c.Attacks.Sequence)
+		resolveSequence(pg, p, c.Effects.Sequence, c.Attacks.SeqVal)
 	}
 	fmt.Println("\t\t finished attacks")
 }
@@ -828,8 +838,10 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+
 	/*
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
@@ -840,7 +852,6 @@ func InitializeSupply(pl int) cd.Supply {
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
 		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 	*/
 
