@@ -37,6 +37,7 @@ func main() {
 	for {
 
 		turnCount++
+		fmt.Println("Turn", turnCount)
 		endGame := pl.PlayTurn(&pg)
 
 		if endGame == true {

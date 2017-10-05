@@ -126,26 +126,12 @@ func DefCellar() cd.Card {
 	// actually nonUsable should be a decision point
 	sq := c.Effects.Sequence
 	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "nonUsable", "unusables"}})
-	sq = append(sq, cd.Seq{Seq: []string{"removeFromHand", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"countCards", "unusables", "cardCount"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"drawDeck", "cardCount", "newCards"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeHand", "newCards"}})
 	c.Effects.Sequence = sq
-	/*
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"getHandType", "nonUsable", "unusables"} })
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"removeFromHand", "unusables"} })
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"countCards", "unusables", "cardCount"} })
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"placeDiscards", "unusables"} })
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"drawDeck", "cardCount", "newCards"} })
-		c.Effects.Sq = append(c.Effects.Sq, cd.Sq{Op:[]string{"placeHand", "newCards"} })
-	*/
-
-	/*
-	   "getHandType", "nonUsable", "unusables"
-	    "removeFromHand", "unusables"
-	    "countCards", "unusables", "cardCount"
-	    "placeDiscards", "unusables"
-	    "drawDeck", "cardCount", "newCards"
-	    "placeHand", "newCards"
-	*/
-
 	/*
 		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "cellar", Type: "nonUsable"}})
 		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "cellar"})

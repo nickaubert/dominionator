@@ -51,6 +51,7 @@ func InitializePlaygroup(s int) Playgroup {
 func PlayTurn(pg *Playgroup) bool {
 
 	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
+	fmt.Println("deck size:", len(pg.Players[pg.PlayerTurn].Deck.Cards))
 
 	pg.ThisTurn.Actions = 1
 	pg.ThisTurn.Buys = 1
@@ -144,6 +145,7 @@ func CleanupPhase(pg *Playgroup) {
 func Draw(p *Player, d int) []cd.Card {
 	var nc []cd.Card
 	for i := 0; i < d; i++ {
+		fmt.Println("deck size", len(p.Deck.Cards))
 		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
 		p.Deck.Cards = z
 		nc = append(nc, c)
@@ -153,9 +155,12 @@ func Draw(p *Player, d int) []cd.Card {
 			ShuffleDeck(p)
 		}
 		if len(p.Deck.Cards) == 0 {
-			// out of cards
+			fmt.Println("Out of cards!")
 			break
 		}
+	}
+	if len(nc) < d {
+		fmt.Println("WARNING: Not enough cards in deck to draw!")
 	}
 	return nc
 }
@@ -398,13 +403,32 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 }
 
 func resolveSequence(pg *Playgroup, p *Player, sequence []cd.Seq) {
+	seqCards := make(map[string][]cd.Card)
+	seqVal := make(map[string]int)
 	for _, seq := range sequence {
 		op := seq.Seq[0]
 		switch op {
 		case "getHandType":
-			fmt.Println("getHandType")
-		case "removeFromHand":
-			fmt.Println("removeFromHand")
+			fmt.Println("getHandType", seq.Seq[1], seq.Seq[2])
+			seqCards[seq.Seq[2]] = findCardType(p.Hand.Cards, seq.Seq[1])
+			fmt.Println("found", len(seqCards[seq.Seq[2]]))
+		case "removeFromHands":
+			fmt.Println("removeFromHands", seq.Seq[1], len(seqCards[seq.Seq[1]]))
+			removeFromHands(p, seqCards[seq.Seq[1]])
+		case "countCards":
+			fmt.Println("countCards", seq.Seq[1], seq.Seq[2], len(seqCards[seq.Seq[1]]))
+			seqVal[seq.Seq[2]] = len(seqCards[seq.Seq[1]])
+		case "placeDiscards":
+			fmt.Println("placeDiscards", seq.Seq[1], len(seqCards[seq.Seq[1]]))
+			discardCards(p, seqCards[seq.Seq[1]])
+		case "drawDeck":
+			fmt.Println("drawDeck", seq.Seq[1], seq.Seq[2], seqVal[seq.Seq[1]])
+			fmt.Println("deck size:", len(p.Deck.Cards))
+			seqCards[seq.Seq[2]] = Draw(p, seqVal[seq.Seq[1]])
+			fmt.Println("drew cards", showQuick(seqCards[seq.Seq[2]]))
+		case "placeHand":
+			fmt.Println("placeHand", seq.Seq[1], len(seqCards[seq.Seq[1]]))
+			p.Hand.Cards = append(p.Hand.Cards, seqCards[seq.Seq[1]]...)
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -692,6 +716,12 @@ func removeFromHand(p *Player, c cd.Card) {
 			p.Hand.Cards = append(p.Hand.Cards[:i], p.Hand.Cards[i+1:]...)
 			break
 		}
+	}
+}
+
+func removeFromHands(p *Player, cs []cd.Card) {
+	for _, c := range cs {
+		removeFromHand(p, c)
 	}
 }
 
