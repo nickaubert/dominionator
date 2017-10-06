@@ -86,6 +86,15 @@ func DefVillage() cd.Card {
 	return c
 }
 
+func DefGardens() cd.Card {
+	var c cd.Card
+	c.Name = "Gardens"
+	c.Cost = 4
+	c.CTypes.Victory = true
+	c.Victories.CardsPerPoint = 10
+	return c
+}
+
 func DefSmithy() cd.Card {
 	var c cd.Card
 	c.Name = "Smithy"
@@ -187,7 +196,16 @@ func DefWorkshop() cd.Card {
 	return c
 }
 
-/*
+func DefMilitia() cd.Card {
+	var c cd.Card
+	c.Name = "Militia"
+	c.Cost = 4
+	c.CTypes.Action = true
+	c.CTypes.Attack = true
+	c.Effects.ExtraCoins = 2
+	c.Attacks.DiscardTo = 3
+	return c
+}
 
 func DefHarbinger() cd.Card {
 	var c cd.Card
@@ -196,11 +214,20 @@ func DefHarbinger() cd.Card {
 	c.CTypes.Action = true
 	c.Effects.DrawCard = 1
 	c.Effects.ExtraActions = 1
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "retrieve", Val: 1}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: "retrieve"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "retrieve"})
+	c.Effects.SeqVal = make(map[string]int)
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"LoadDiscards", "discards"}})
+	sq = append(sq, cd.Seq{Seq: []string{"findBestPlayable", "discards", "bestCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"RetrieveDiscard", "bestCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "bestCard"}})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "retrieve", Val: 1}})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: "retrieve"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "retrieve"})
+	c.Effects.Sequence = sq
 	return c
 }
+
+/*
 
 func DefBureaucrat() cd.Card {
 	var c cd.Card
@@ -263,25 +290,6 @@ func DefMine() cd.Card {
 	return c
 }
 
-func DefGardens() cd.Card {
-	var c cd.Card
-	c.Name = "Gardens"
-	c.Cost = 4
-	c.CTypes.Victory = true
-	c.Victories.CardsPerPoint = 10
-	return c
-}
-
-func DefMilitia() cd.Card {
-	var c cd.Card
-	c.Name = "Militia"
-	c.Cost = 4
-	c.CTypes.Action = true
-	c.CTypes.Attack = true
-	c.Effects.ExtraCoins = 2
-	c.Attacks.DiscardTo = 3
-	return c
-}
 
 func DefMoneylender() cd.Card {
 	var c cd.Card

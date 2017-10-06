@@ -51,7 +51,7 @@ func InitializePlaygroup(s int) Playgroup {
 func PlayTurn(pg *Playgroup) bool {
 
 	fmt.Printf("%s's turn\n", pg.Players[pg.PlayerTurn].Name)
-	// fmt.Println("deck size:", len(pg.Players[pg.PlayerTurn].Deck.Cards))
+	fmt.Println("deck:", len(pg.Players[pg.PlayerTurn].Deck.Cards), "discard:", len(pg.Players[pg.PlayerTurn].Discard.Cards))
 
 	pg.ThisTurn.Actions = 1
 	pg.ThisTurn.Buys = 1
@@ -418,7 +418,7 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 					seqCards[seq.Seq[2]] = seqCards[seq.Seq[2]][:seqVal[seq.Seq[2]]]
 				}
 			}
-			fmt.Println("found", len(seqCards[seq.Seq[2]]))
+			fmt.Println("\t\t\t found", len(seqCards[seq.Seq[2]]))
 		case "removeFromHands":
 			fmt.Println("\t\t\t removeFromHands", seq.Seq[1], len(seqCards[seq.Seq[1]]))
 			removeFromHands(p, seqCards[seq.Seq[1]])
@@ -442,8 +442,33 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 		case "GainCard":
 			fmt.Println("\t\t\t GainCard", seq.Seq[1], seq.Seq[2], seqVal[seq.Seq[2]])
 			c := SelectCardBuy(seqVal[seq.Seq[2]], seq.Seq[1], pg.Supply)
+			if c.Name == "" {
+				fmt.Println("\t\t\t nothing to gain!")
+				continue
+			}
 			seqCards[seq.Seq[2]] = append(seqCards[seq.Seq[2]], c)
 			fmt.Println("\t\t\t gained", c.Name)
+		case "LoadDiscards":
+			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1])
+			seqCards[seq.Seq[1]] = p.Discard.Cards
+			fmt.Println("loaded", len(seqCards[seq.Seq[1]]), "of", len(p.Discard.Cards))
+		case "findBestPlayable":
+			fmt.Println("\t\t\t findBestPlayable", seq.Seq[1], seq.Seq[2])
+			bc := bestPlayableCard(seqCards[seq.Seq[1]])
+			if bc.Name == "" {
+				fmt.Println("\t\t\t nothing to play!")
+				continue
+			}
+			seqCards[seq.Seq[2]] = append(seqCards[seq.Seq[2]], bc)
+			fmt.Println("\t\t\t found", bc.Name)
+		case "RetrieveDiscard":
+			fmt.Println("\t\t\t RetrieveDiscard", seq.Seq[1])
+			removeFromDiscard(p, seqCards[seq.Seq[1]][0])
+		case "PlaceDeck":
+			fmt.Println("\t\t\t PlaceDeck", seq.Seq[1])
+			if seqCards[seq.Seq[1]][0].Name != "" {
+				p.Deck.Cards = append(seqCards[seq.Seq[1]], p.Deck.Cards...)
+			}
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -744,9 +769,10 @@ func removeFromDiscard(p *Player, c cd.Card) {
 	for i, h := range p.Discard.Cards {
 		if h.Name == c.Name {
 			p.Discard.Cards = append(p.Discard.Cards[:i], p.Discard.Cards[i+1:]...)
-			break
+			return
 		}
 	}
+	fmt.Println("ERROR: could not remove from discard:", c.Name)
 }
 
 func trashFromHand(p *Player, pg *Playgroup, c cd.Card) {
@@ -837,28 +863,26 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
 
 	/* kingdom */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 
-	/*
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
-	*/
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 
 	return s
 }
