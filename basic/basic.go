@@ -266,12 +266,16 @@ func DefBureaucrat() cd.Card {
 	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "silver", "newSilver"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "newSilver"}})
 	c.Effects.Sequence = sq
+
+	c.Attacks.SeqVal = make(map[string]int)
+	c.Attacks.SeqVal["getHandTypeMax"] = 1
 	aq := c.Attacks.Sequence
 	aq = append(aq, cd.Seq{Seq: []string{"getHandType", "victory", "putdeck"}})
 	aq = append(aq, cd.Seq{Seq: []string{"removeFromHands", "putdeck"}})
 	aq = append(aq, cd.Seq{Seq: []string{"PlaceDeck", "putdeck"}})
 	// or reveals a hand with no victory cards...
 	c.Attacks.Sequence = aq
+
 	return c
 
 	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "silver", Card: DefSilver()}})
