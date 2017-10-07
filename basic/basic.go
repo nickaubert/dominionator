@@ -162,7 +162,7 @@ func DefChapel() cd.Card {
 	c.Cost = 2
 	c.CTypes.Action = true
 	c.Effects.SeqVal = make(map[string]int)
-	c.Effects.SeqVal["trashMax"] = 4
+	c.Effects.SeqVal["getHandTypeMax"] = 4
 	sq := c.Effects.Sequence
 	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "curse", "trashMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "trashMax"}})
@@ -188,10 +188,10 @@ func DefWorkshop() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.SeqVal = make(map[string]int)
-	c.Effects.SeqVal["newCardVal"] = 4
+	c.Effects.SeqVal["GainCardMaxVal"] = 4
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"GainCard", "any", "newCardVal"}})
-	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCardVal"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCard", "any", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
 	c.Effects.Sequence = sq
 	return c
 }

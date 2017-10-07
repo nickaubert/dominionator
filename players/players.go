@@ -94,6 +94,8 @@ func ActionPhase(pg *Playgroup) {
 		showStatus(pg)
 	}
 
+	validatePlayerCards(pg)
+
 }
 
 func BuyPhase(pg *Playgroup) {
@@ -406,34 +408,39 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 
 func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]int) {
 	seqCards := make(map[string][]cd.Card)
-	// seqVal := c.Effects.SeqVal
 	for _, seq := range seq {
 		op := seq.Seq[0]
 		switch op {
 		case "getHandType":
-			fmt.Println("\t\t\t getHandType", seq.Seq[1], seq.Seq[2])
-			seqCards[seq.Seq[2]] = findCardType(p.Hand.Cards, seq.Seq[1])
-			if seqVal[seq.Seq[2]] > 0 {
-				if seqVal[seq.Seq[2]] < len(seqCards[seq.Seq[2]]) {
-					fmt.Println("lens:", seqVal[seq.Seq[2]], len(seqCards[seq.Seq[2]]))
-					seqCards[seq.Seq[2]] = seqCards[seq.Seq[2]][:seqVal[seq.Seq[2]]]
+			cardType := seq.Seq[1]
+			matchingCards := seq.Seq[2]
+			fmt.Println("\t\t\t getHandType", cardType, matchingCards)
+			seqCards[matchingCards] = findCardType(p.Hand.Cards, cardType)
+			if seqVal["getHandTypeMax"] > 0 {
+				if seqVal["getHandTypeMax"] < len(seqCards[matchingCards]) {
+					seqCards[matchingCards] = seqCards[matchingCards][:seqVal["getHandTypeMax"]]
 				}
 			}
-			fmt.Println("\t\t\t found", len(seqCards[seq.Seq[2]]))
+			fmt.Println("\t\t\t found", len(seqCards[matchingCards]))
 		case "removeFromHands":
-			fmt.Println("\t\t\t removeFromHands", seq.Seq[1], len(seqCards[seq.Seq[1]]))
-			removeFromHands(p, seqCards[seq.Seq[1]])
+			removeThese := seq.Seq[1]
+			fmt.Println("\t\t\t removeFromHands", removeThese, len(seqCards[removeThese]))
+			removeFromHands(p, seqCards[removeThese])
 		case "countCards":
-			fmt.Println("\t\t\t countCards", seq.Seq[1], seq.Seq[2], len(seqCards[seq.Seq[1]]))
-			seqVal[seq.Seq[2]] = len(seqCards[seq.Seq[1]])
+			countThese := seq.Seq[1]
+			counted := seq.Seq[2]
+			seqVal[counted] = len(seqCards[countThese])
+			fmt.Println("\t\t\t countCards", countThese, counted, seqVal[counted])
 		case "placeDiscards":
-			fmt.Println("\t\t\t placeDiscards", seq.Seq[1], len(seqCards[seq.Seq[1]]))
-			discardCards(p, seqCards[seq.Seq[1]])
+			discards := seq.Seq[1]
+			fmt.Println("\t\t\t placeDiscards", discards, len(seqCards[discards]))
+			discardCards(p, seqCards[discards])
 		case "drawDeck":
-			fmt.Println("\t\t\t drawDeck", seq.Seq[1], seq.Seq[2], seqVal[seq.Seq[1]])
-			// fmt.Println("deck size:", len(p.Deck.Cards), "discard size:", len(p.Discard.Cards))
-			seqCards[seq.Seq[2]] = Draw(p, seqVal[seq.Seq[1]])
-			fmt.Println("\t\t\t drew cards", showQuick(seqCards[seq.Seq[2]]))
+			drawMax := seq.Seq[1]
+			drewCards := seq.Seq[2]
+			fmt.Println("\t\t\t drawDeck", drawMax, drewCards, seqVal[drawMax])
+			seqCards[drewCards] = Draw(p, seqVal[drawMax])
+			fmt.Println("\t\t\t drew cards", showQuick(seqCards[drewCards]))
 		case "placeHand":
 			fmt.Println("\t\t\t placeHand", seq.Seq[1], len(seqCards[seq.Seq[1]]))
 			p.Hand.Cards = append(p.Hand.Cards, seqCards[seq.Seq[1]]...)
@@ -441,14 +448,17 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 			fmt.Println("\t\t\t placeTrash", seq.Seq[1], len(seqCards[seq.Seq[1]]))
 			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[seq.Seq[1]]...)
 		case "GainCard":
-			fmt.Println("\t\t\t GainCard", seq.Seq[1], seq.Seq[2], seqVal[seq.Seq[2]])
-			c := SelectCardBuy(seqVal[seq.Seq[2]], seq.Seq[1], pg.Supply)
+			cardType := seq.Seq[1]
+			newCard := seq.Seq[2]
+			maxVal := seqVal["GainCardMaxVal"]
+			fmt.Println("\t\t\t GainCard", cardType, newCard, maxVal)
+			c := SelectCardBuy(maxVal, cardType, pg.Supply)
 			if c.Name == "" {
 				fmt.Println("\t\t\t nothing to gain!")
 				continue
 			}
-			seqCards[seq.Seq[2]] = append(seqCards[seq.Seq[2]], c)
 			fmt.Println("\t\t\t gained", c.Name)
+			seqCards[newCard] = append(seqCards[newCard], c)
 		case "LoadDiscards":
 			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1])
 			seqCards[seq.Seq[1]] = p.Discard.Cards
@@ -752,7 +762,9 @@ func discardTo(p *Player, m int) {
 func gainCurse(p *Player, s *cd.Supply, m int) {
 	for i := 0; i < m; i++ {
 		c := gainCard(s, bs.DefCurse())
-		p.Discard.Cards = append(p.Discard.Cards, c)
+		if c.Name == "Curse" {
+			p.Discard.Cards = append(p.Discard.Cards, c)
+		}
 	}
 }
 
@@ -840,6 +852,22 @@ func bestPlayableCard(cs []cd.Card) cd.Card {
 	return b
 }
 
+func validatePlayerCards(pg *Playgroup) {
+	for _, p := range pg.Players {
+		validateCards(p.Hand.Cards, p.Name, "hand")
+		validateCards(p.Discard.Cards, p.Name, "discard")
+		validateCards(p.Deck.Cards, p.Name, "deck")
+	}
+}
+
+func validateCards(cs []cd.Card, pname, cardset string) {
+	for _, c := range cs {
+		if c.Name == "" {
+			fmt.Println("ERROR: empty card! %s %s", pname, cardset)
+		}
+	}
+}
+
 func InitializeSupply(pl int) cd.Supply {
 
 	var s cd.Supply
@@ -873,9 +901,9 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
