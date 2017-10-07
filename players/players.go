@@ -442,11 +442,13 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 			seqCards[drewCards] = Draw(p, seqVal[drawMax])
 			fmt.Println("\t\t\t drew cards", showQuick(seqCards[drewCards]))
 		case "placeHand":
-			fmt.Println("\t\t\t placeHand", seq.Seq[1], len(seqCards[seq.Seq[1]]))
-			p.Hand.Cards = append(p.Hand.Cards, seqCards[seq.Seq[1]]...)
+			newCards := seq.Seq[1]
+			fmt.Println("\t\t\t placeHand", newCards, len(seqCards[newCards]))
+			p.Hand.Cards = append(p.Hand.Cards, seqCards[newCards]...)
 		case "placeTrash":
-			fmt.Println("\t\t\t placeTrash", seq.Seq[1], len(seqCards[seq.Seq[1]]))
-			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[seq.Seq[1]]...)
+			trashCards := seq.Seq[1]
+			fmt.Println("\t\t\t placeTrash", trashCards, len(seqCards[trashCards]))
+			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[trashCards]...)
 		case "GainCard":
 			cardType := seq.Seq[1]
 			newCard := seq.Seq[2]
@@ -460,31 +462,36 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 			fmt.Println("\t\t\t gained", c.Name)
 			seqCards[newCard] = append(seqCards[newCard], c)
 		case "LoadDiscards":
-			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1])
-			seqCards[seq.Seq[1]] = p.Discard.Cards
-			// fmt.Println("loaded", len(seqCards[seq.Seq[1]]), "of", len(p.Discard.Cards))
-			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1], len(seqCards[seq.Seq[1]]))
+			discards := seq.Seq[1]
+			fmt.Println("\t\t\t LoadDiscards", discards)
+			seqCards[discards] = p.Discard.Cards
+			fmt.Println("\t\t\t LoadDiscards", discards, len(seqCards[discards]))
 		case "findBestPlayable":
-			fmt.Println("\t\t\t findBestPlayable", seq.Seq[1], seq.Seq[2])
-			bc := bestPlayableCard(seqCards[seq.Seq[1]])
+			cardSet := seq.Seq[1]
+			bestCard := seq.Seq[2]
+			fmt.Println("\t\t\t findBestPlayable", cardSet, bestCard)
+			bc := bestPlayableCard(seqCards[cardSet])
 			if bc.Name == "" {
 				fmt.Println("\t\t\t nothing to play!")
 				continue
 			}
-			seqCards[seq.Seq[2]] = append(seqCards[seq.Seq[2]], bc)
+			seqCards[bestCard] = append(seqCards[bestCard], bc)
 			fmt.Println("\t\t\t found", bc.Name)
 		case "RetrieveDiscard":
-			fmt.Println("\t\t\t RetrieveDiscard", seq.Seq[1])
-			if len(seqCards[seq.Seq[1]]) < 1 {
+			// TODO: remove multiple cards?
+			removeCard := seq.Seq[1]
+			fmt.Println("\t\t\t RetrieveDiscard", removeCard)
+			if len(seqCards[removeCard]) < 1 {
 				continue
 			}
-			removeFromDiscard(p, seqCards[seq.Seq[1]][0])
+			removeFromDiscard(p, seqCards[removeCard][0])
 		case "PlaceDeck":
-			fmt.Println("\t\t\t PlaceDeck", seq.Seq[1])
-			if len(seqCards[seq.Seq[1]]) < 1 {
+			placeCards := seq.Seq[1]
+			fmt.Println("\t\t\t PlaceDeck", placeCards)
+			if len(seqCards[placeCards]) < 1 {
 				continue
 			}
-			p.Deck.Cards = append(seqCards[seq.Seq[1]], p.Deck.Cards...)
+			p.Deck.Cards = append(seqCards[placeCards], p.Deck.Cards...)
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}

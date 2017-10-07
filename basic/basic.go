@@ -220,9 +220,6 @@ func DefHarbinger() cd.Card {
 	sq = append(sq, cd.Seq{Seq: []string{"findBestPlayable", "discards", "bestCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"RetrieveDiscard", "bestCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "bestCard"}})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "retrieve", Val: 1}})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{RetrieveDiscard: "retrieve"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "retrieve"})
 	c.Effects.Sequence = sq
 	return c
 }
