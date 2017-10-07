@@ -310,6 +310,10 @@ func matchType(c cd.Card, t string) bool {
 		if c.CTypes.Curse == true {
 			return true
 		}
+	case "silver": // not a type?
+		if c.Name == "Silver" {
+			return true
+		}
 	case "actionExtra":
 		if c.CTypes.Action == true {
 			if c.Effects.ExtraActions > 0 {
@@ -469,11 +473,23 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 			trashCards := seq.Seq[1]
 			fmt.Println("\t\t\t placeTrash", trashCards, len(seqCards[trashCards]))
 			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[trashCards]...)
-		case "GainCard":
+			/*
+				case "GainCard":
+					wantCard := seq.Seq[1]
+					fmt.Println("\t\t\t ", cardType, newCard, maxVal)
+					c := SelectCardBuy(maxVal, cardType, pg.Supply)
+					if c.Name == "" {
+						fmt.Println("\t\t\t nothing to gain!")
+						continue
+					}
+					fmt.Println("\t\t\t gained", c.Name)
+					seqCards[newCard] = append(seqCards[newCard], c)
+			*/
+		case "GainCardType":
 			cardType := seq.Seq[1]
 			newCard := seq.Seq[2]
-			maxVal := seqVal["GainCardMaxVal"]
-			fmt.Println("\t\t\t GainCard", cardType, newCard, maxVal)
+			maxVal := seqVal["GainCardTypeMaxVal"]
+			fmt.Println("\t\t\t GainCardType", cardType, newCard, maxVal)
 			c := SelectCardBuy(maxVal, cardType, pg.Supply)
 			if c.Name == "" {
 				fmt.Println("\t\t\t nothing to gain!")
@@ -746,7 +762,7 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 		if c.Attacks.GainCurse > 0 {
 			gainCurse(p, &pg.Supply, c.Attacks.GainCurse)
 		}
-		resolveSequence(pg, p, c.Effects.Sequence, c.Attacks.SeqVal)
+		resolveSequence(pg, p, c.Attacks.Sequence, c.Attacks.SeqVal)
 	}
 	fmt.Println("\t\t finished attacks")
 }
@@ -957,17 +973,17 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})

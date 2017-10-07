@@ -188,9 +188,9 @@ func DefWorkshop() cd.Card {
 	c.Cost = 3
 	c.CTypes.Action = true
 	c.Effects.SeqVal = make(map[string]int)
-	c.Effects.SeqVal["GainCardMaxVal"] = 4
+	c.Effects.SeqVal["GainCardTypeMaxVal"] = 4
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"GainCard", "any", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
 	c.Effects.Sequence = sq
 	return c
@@ -249,14 +249,8 @@ func DefVassal() cd.Card {
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlayAction", "actionCard"}})
 	c.Effects.Sequence = sq
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "vassal", Val: 1, Type: "action"}})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
-	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
 	return c
 }
-
-/*
 
 func DefBureaucrat() cd.Card {
 	var c cd.Card
@@ -264,16 +258,31 @@ func DefBureaucrat() cd.Card {
 	c.Cost = 4
 	c.CTypes.Action = true
 	c.CTypes.Attack = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "silver", Card: DefSilver()}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: "silver"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "silver"})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "putdeck", Type: "victory", Val: 1}})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "putdeck"})
-	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: "putdeck"})
+
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["GainCardTypeMaxVal"] = 3 // maybe should create GainCard instead
+	sq := c.Effects.Sequence
+	c.Effects.Sequence = sq
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "silver", "newSilver"}})
+	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "newSilver"}})
+	c.Effects.Sequence = sq
+	aq := c.Attacks.Sequence
+	aq = append(aq, cd.Seq{Seq: []string{"getHandType", "victory", "putdeck"}})
+	aq = append(aq, cd.Seq{Seq: []string{"removeFromHands", "putdeck"}})
+	aq = append(aq, cd.Seq{Seq: []string{"PlaceDeck", "putdeck"}})
 	// or reveals a hand with no victory cards...
+	c.Attacks.Sequence = aq
 	return c
+
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "silver", Card: DefSilver()}})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetSupplyCard: "silver"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDeck: "silver"})
+	// c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "putdeck", Type: "victory", Val: 1}})
+	// c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "putdeck"})
+	// c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: "putdeck"})
 }
 
+/*
 func DefRemodel() cd.Card {
 	var c cd.Card
 	c.Name = "Remodel"
