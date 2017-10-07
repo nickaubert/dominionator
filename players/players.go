@@ -400,6 +400,7 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 		resolveAttacks(pg, c)
 	}
 	// resolveSequence(pg, p, c.Effects.Sequence)
+	// fmt.Println("discardsize:", len(p.Discard.Cards))
 	resolveSequence(pg, p, c.Effects.Sequence, c.Effects.SeqVal)
 }
 
@@ -451,7 +452,8 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 		case "LoadDiscards":
 			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1])
 			seqCards[seq.Seq[1]] = p.Discard.Cards
-			fmt.Println("loaded", len(seqCards[seq.Seq[1]]), "of", len(p.Discard.Cards))
+			// fmt.Println("loaded", len(seqCards[seq.Seq[1]]), "of", len(p.Discard.Cards))
+			fmt.Println("\t\t\t LoadDiscards", seq.Seq[1], len(seqCards[seq.Seq[1]]))
 		case "findBestPlayable":
 			fmt.Println("\t\t\t findBestPlayable", seq.Seq[1], seq.Seq[2])
 			bc := bestPlayableCard(seqCards[seq.Seq[1]])
@@ -463,12 +465,16 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 			fmt.Println("\t\t\t found", bc.Name)
 		case "RetrieveDiscard":
 			fmt.Println("\t\t\t RetrieveDiscard", seq.Seq[1])
+			if len(seqCards[seq.Seq[1]]) < 1 {
+				continue
+			}
 			removeFromDiscard(p, seqCards[seq.Seq[1]][0])
 		case "PlaceDeck":
 			fmt.Println("\t\t\t PlaceDeck", seq.Seq[1])
-			if seqCards[seq.Seq[1]][0].Name != "" {
-				p.Deck.Cards = append(seqCards[seq.Seq[1]], p.Deck.Cards...)
+			if len(seqCards[seq.Seq[1]]) < 1 {
+				continue
 			}
+			p.Deck.Cards = append(seqCards[seq.Seq[1]], p.Deck.Cards...)
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
