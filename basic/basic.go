@@ -224,6 +224,38 @@ func DefHarbinger() cd.Card {
 	return c
 }
 
+func DefWoodcutter() cd.Card {
+	var c cd.Card
+	c.Name = "Woodcutter"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.ExtraBuys = 1
+	c.Effects.ExtraCoins = 2
+	return c
+}
+
+func DefVassal() cd.Card {
+	var c cd.Card
+	c.Name = "Vassal"
+	c.Cost = 3
+	c.CTypes.Action = true
+	c.Effects.ExtraCoins = 2
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["drawDeckMax"] = 1
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"drawDeck", "drawDeckMax", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getCardType", "newCard", "action", "actionCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeCards", "actionCard", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"PlayAction", "actionCard"}})
+	c.Effects.Sequence = sq
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "vassal", Val: 1, Type: "action"}})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
+	// c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
+	return c
+}
+
 /*
 
 func DefBureaucrat() cd.Card {
@@ -239,19 +271,6 @@ func DefBureaucrat() cd.Card {
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{GetHandType: "putdeck"})
 	c.Attacks.Sequence = append(c.Attacks.Sequence, cd.Sequence{PlaceDeck: "putdeck"})
 	// or reveals a hand with no victory cards...
-	return c
-}
-
-func DefVassal() cd.Card {
-	var c cd.Card
-	c.Name = "Vassal"
-	c.Cost = 3
-	c.CTypes.Action = true
-	c.Effects.ExtraCoins = 2
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "vassal", Val: 1, Type: "action"}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DrawDeck: "vassal"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{DiscardNonMatch: "vassal"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlayAction: "vassal"})
 	return c
 }
 
@@ -300,15 +319,6 @@ func DefMoneylender() cd.Card {
 	return c
 }
 
-func DefWoodcutter() cd.Card {
-	var c cd.Card
-	c.Name = "Woodcutter"
-	c.Cost = 3
-	c.CTypes.Action = true
-	c.Effects.ExtraBuys = 1
-	c.Effects.ExtraCoins = 2
-	return c
-}
 */
 
 func InitialDeck() []cd.Card {

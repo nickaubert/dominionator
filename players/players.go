@@ -421,11 +421,28 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 					seqCards[matchingCards] = seqCards[matchingCards][:seqVal["getHandTypeMax"]]
 				}
 			}
-			fmt.Println("\t\t\t found", len(seqCards[matchingCards]))
+			fmt.Println("\t\t\t found", showQuick(seqCards[matchingCards]))
+		case "getCardType":
+			cardSet := seq.Seq[1]
+			cardType := seq.Seq[2]
+			matchingCards := seq.Seq[3]
+			fmt.Println("\t\t\t getCardType", cardSet, cardType, matchingCards)
+			seqCards[matchingCards] = findCardType(seqCards[cardSet], cardType)
+			if seqVal["getCardTypeMax"] > 0 {
+				if seqVal["getCardTypeMax"] < len(seqCards[matchingCards]) {
+					seqCards[matchingCards] = seqCards[matchingCards][:seqVal["getCardTypeMax"]]
+				}
+			}
+			fmt.Println("\t\t\t found", showQuick(seqCards[matchingCards]))
 		case "removeFromHands":
 			removeThese := seq.Seq[1]
 			fmt.Println("\t\t\t removeFromHands", removeThese, len(seqCards[removeThese]))
 			removeFromHands(p, seqCards[removeThese])
+		case "removeCards":
+			removeThese := seq.Seq[1]
+			fromThese := seq.Seq[2]
+			fmt.Println("\t\t\t removeCards", showQuick(seqCards[removeThese]), "from set", showQuick(seqCards[fromThese]))
+			seqCards[fromThese] = removeCards(seqCards[removeThese], seqCards[fromThese])
 		case "countCards":
 			countThese := seq.Seq[1]
 			counted := seq.Seq[2]
@@ -434,6 +451,9 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 		case "placeDiscards":
 			discards := seq.Seq[1]
 			fmt.Println("\t\t\t placeDiscards", discards, len(seqCards[discards]))
+			if len(seqCards[discards]) < 1 {
+				continue
+			}
 			discardCards(p, seqCards[discards])
 		case "drawDeck":
 			drawMax := seq.Seq[1]
@@ -492,6 +512,20 @@ func resolveSequence(pg *Playgroup, p *Player, seq []cd.Seq, seqVal map[string]i
 				continue
 			}
 			p.Deck.Cards = append(seqCards[placeCards], p.Deck.Cards...)
+		case "PlayAction":
+			playCards := seq.Seq[1]
+			if seqVal["PlayActionTimes"] == 0 {
+				seqVal["PlayActionTimes"] = 1
+			}
+			fmt.Println("\t\t\t PlayAction", showQuick(seqCards[playCards]))
+			// decision point here whether to play any action
+			for _, c := range seqCards[playCards] {
+				fmt.Println("\t\t\t seq play action", c.Name)
+				p.InPlay.Cards = append(p.InPlay.Cards, c)
+				for j := 0; j < seqVal["PlayActionTimes"]; j++ {
+					resolveEffects(pg, c)
+				}
+			}
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -742,7 +776,7 @@ func showStatus(pg *Playgroup) {
 func discardCards(p *Player, cs []cd.Card) {
 	fmt.Print("\t\t\t discarding ")
 	for _, c := range cs {
-		removeFromHand(p, c)
+		// removeFromHand(p, c)
 		fmt.Print(c.Name, ", ")
 		p.Discard.Cards = append(p.Discard.Cards, c)
 	}
@@ -762,6 +796,7 @@ func selectDiscardOwn(p *Player) cd.Card {
 func discardTo(p *Player, m int) {
 	for len(p.Hand.Cards) > m {
 		d := selectDiscardOwn(p)
+		removeFromHand(p, d)
 		discardCards(p, []cd.Card{d})
 	}
 }
@@ -788,6 +823,18 @@ func removeFromHands(p *Player, cs []cd.Card) {
 	for _, c := range cs {
 		removeFromHand(p, c)
 	}
+}
+
+func removeCards(rs, cs []cd.Card) []cd.Card {
+	for _, r := range rs {
+		for i, c := range cs {
+			if r.Name == c.Name {
+				cs = append(cs[:i], cs[i+1:]...)
+				break
+			}
+		}
+	}
+	return cs
 }
 
 func removeFromDiscard(p *Player, c cd.Card) {
@@ -917,9 +964,9 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
 
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
