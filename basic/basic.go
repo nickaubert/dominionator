@@ -260,10 +260,9 @@ func DefBureaucrat() cd.Card {
 	c.CTypes.Attack = true
 
 	c.Effects.SeqVal = make(map[string]int)
-	c.Effects.SeqVal["GainCardTypeMaxVal"] = 3 // maybe should create GainCard instead
 	sq := c.Effects.Sequence
 	c.Effects.Sequence = sq
-	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "silver", "newSilver"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardName", "Silver", "newSilver"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "newSilver"}})
 	c.Effects.Sequence = sq
 

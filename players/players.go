@@ -121,7 +121,7 @@ func BuyPhase(pg *Playgroup) {
 			break
 		}
 		fmt.Println("\t\t buying", c.Name)
-		c = gainCard(&pg.Supply, c)
+		c = gainCard(&pg.Supply, c.Name)
 		if c.Name == "" {
 			panic(fmt.Sprintf("ERROR: missing gain card! %s %v", c, pg.Supply))
 		}
@@ -210,6 +210,7 @@ func SelectCardBuy(o int, t string, s cd.Supply) cd.Card {
 	return c
 }
 
+/*
 func gainCard(s *cd.Supply, c cd.Card) cd.Card {
 	for n, pl := range s.Piles {
 		if pl.Card.Name == c.Name {
@@ -218,6 +219,20 @@ func gainCard(s *cd.Supply, c cd.Card) cd.Card {
 			}
 			s.Piles[n].Count--
 			return c
+		}
+	}
+	return cd.Card{}
+}
+*/
+
+func gainCard(s *cd.Supply, n string) cd.Card {
+	for i, pl := range s.Piles {
+		if pl.Card.Name == n {
+			if s.Piles[i].Count == 0 {
+				return cd.Card{} // empty card
+			}
+			s.Piles[i].Count--
+			return pl.Card
 		}
 	}
 	return cd.Card{}
@@ -481,18 +496,17 @@ func resolveSequence(pg *Playgroup, p *Player, c cd.Card, effectType string) {
 			trashCards := seq.Seq[1]
 			fmt.Println("\t\t\t placeTrash", trashCards, len(seqCards[trashCards]))
 			pg.Trash.Cards = append(pg.Trash.Cards, seqCards[trashCards]...)
-			/*
-				case "GainCard":
-					wantCardSlice := seq.Seq[1]
-					fmt.Println("\t\t\t GainCard", wantCardSlice)
-					c := SelectCardBuy(maxVal, cardType, pg.Supply)
-					if c.Name == "" {
-						fmt.Println("\t\t\t nothing to gain!")
-						continue
-					}
-					fmt.Println("\t\t\t gained", c.Name)
-					seqCards[newCard] = append(seqCards[newCard], c)
-			*/
+		case "GainCardName":
+			wantCardName := seq.Seq[1]
+			newCard := seq.Seq[2]
+			fmt.Println("\t\t\t GainCardName", wantCardName, newCard)
+			c := gainCard(&pg.Supply, wantCardName)
+			if c.Name == "" {
+				fmt.Println("\t\t\t nothing to gain!")
+				continue
+			}
+			fmt.Println("\t\t\t gained", c.Name)
+			seqCards[newCard] = append(seqCards[newCard], c)
 		case "GainCardType":
 			cardType := seq.Seq[1]
 			newCard := seq.Seq[2]
@@ -828,7 +842,8 @@ func discardTo(p *Player, m int) {
 
 func gainCurse(p *Player, s *cd.Supply, m int) {
 	for i := 0; i < m; i++ {
-		c := gainCard(s, bs.DefCurse())
+		// c := gainCard(s, bs.DefCurse())
+		c := gainCard(s, "Curse")
 		if c.Name == "Curse" {
 			p.Discard.Cards = append(p.Discard.Cards, c)
 		}
