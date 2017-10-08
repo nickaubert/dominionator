@@ -147,6 +147,7 @@ func DefCellar() cd.Card {
 	c.Effects.SeqVal = make(map[string]int)
 	sq := c.Effects.Sequence
 	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "nonUsable", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "unusables"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "unusables"}})
 	sq = append(sq, cd.Seq{Seq: []string{"countCards", "unusables", "cardCount"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "unusables"}})
@@ -278,6 +279,26 @@ func DefBureaucrat() cd.Card {
 
 }
 
+func DefCouncilRoom() cd.Card {
+	var c cd.Card
+	c.Name = "CouncilRoom"
+	c.Cost = 5
+	c.Effects.DrawCard = 4
+	c.Effects.ExtraBuys = 1
+	c.CTypes.Action = true
+	c.CTypes.Attack = false // but using "attacks" anyway
+
+	// not an "attack" per se
+	c.Attacks.SeqVal = make(map[string]int)
+	c.Attacks.SeqVal["drawDeckMax"] = 1
+	aq := c.Attacks.Sequence
+	aq = append(aq, cd.Seq{Seq: []string{"drawDeck", "drawDeckMax", "newCard"}})
+	aq = append(aq, cd.Seq{Seq: []string{"placeHand", "newCard"}})
+	c.Attacks.Sequence = aq
+	return c
+
+}
+
 func DefMoneylender() cd.Card {
 	var c cd.Card
 	c.Name = "Moneylender"
@@ -289,6 +310,7 @@ func DefMoneylender() cd.Card {
 	c.Effects.SeqVal["AddXCoinsVal"] = 3
 	sq := c.Effects.Sequence
 	sq = append(sq, cd.Seq{Seq: []string{"GetHandMatch", "Copper", "coppers"}})
+	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "coppers"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "coppers"}})
 	sq = append(sq, cd.Seq{Seq: []string{"AddXCoins", "coppers"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "coppers"}})
@@ -316,17 +338,6 @@ func DefMine() cd.Card {
 	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "treasure", "newtreasure"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeHand", "newtreasure"}})
 	c.Effects.Sequence = sq
-
-	/*
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "mine", Type: "treasure", Val: 1}})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "mine"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "mine", Type: "treasure", Val: 3}})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "mine"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "mine"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "mine"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "mine"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceHands: "mine"})
-	*/
 	return c
 }
 
@@ -350,17 +361,24 @@ func DefRemodel() cd.Card {
 	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newcard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newtreasure"}})
 	c.Effects.Sequence = sq
+	return c
+}
 
-	/*
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 1}})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "remodel"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 2}})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "remodel"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "remodel"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "remodel"})
-		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "remodel"})
-	*/
+func DefThroneRoom() cd.Card {
+	var c cd.Card
+	c.Name = "ThroneRoom"
+	c.Cost = 4
+	c.CTypes.Action = true
+
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["getHandTypeMax"] = 1
+	c.Effects.SeqVal["PlayActionTimes"] = 2
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "action", "actioncard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "actioncard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "actioncard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"PlayAction", "actionCard"}})
+	c.Effects.Sequence = sq
 	return c
 }
 
