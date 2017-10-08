@@ -141,11 +141,19 @@ func CleanupPhase(pg *Playgroup) {
 	p.Discard.Cards = append(p.Discard.Cards, p.Hand.Cards...)
 	p.Hand.Cards = p.Hand.Cards[:0]
 	nc := Draw(p, 5)
-	p.Hand.Cards = append(p.Hand.Cards, nc...)
+	if len(nc) > 0 {
+		p.Hand.Cards = append(p.Hand.Cards, nc...)
+	}
 }
 
 func Draw(p *Player, d int) []cd.Card {
 	var nc []cd.Card
+	if len(p.Deck.Cards) == 0 {
+		if len(p.Discard.Cards) == 0 {
+			fmt.Println("WARNING: Not enough cards in deck to draw!")
+			return nc
+		}
+	}
 	for i := 0; i < d; i++ {
 		// fmt.Println("deck size", len(p.Deck.Cards))
 		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
@@ -417,7 +425,9 @@ func resolveEffects(pg *Playgroup, c cd.Card) {
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	if c.Effects.DrawCard > 0 {
 		nc := Draw(p, c.Effects.DrawCard)
-		p.Hand.Cards = append(p.Hand.Cards, nc...)
+		if len(nc) > 0 {
+			p.Hand.Cards = append(p.Hand.Cards, nc...)
+		}
 	}
 	if c.CTypes.Attack == true {
 		resolveAttacks(pg, c)
@@ -489,7 +499,10 @@ Sequence:
 			drawMax := seq.Seq[1]
 			drewCards := seq.Seq[2]
 			fmt.Println("\t\t\t drawDeck", drawMax, drewCards, seqVal[drawMax])
-			seqCards[drewCards] = Draw(p, seqVal[drawMax])
+			nc := Draw(p, seqVal[drawMax])
+			if len(nc) > 0 {
+				seqCards[drewCards] = nc
+			}
 			fmt.Println("\t\t\t drew cards", showQuick(seqCards[drewCards]))
 		case "placeHand":
 			newCards := seq.Seq[1]
@@ -1035,20 +1048,19 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
 
 	return s
 }

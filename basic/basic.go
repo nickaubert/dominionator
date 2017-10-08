@@ -330,23 +330,39 @@ func DefMine() cd.Card {
 	return c
 }
 
-/*
 func DefRemodel() cd.Card {
 	var c cd.Card
 	c.Name = "Remodel"
 	c.Cost = 4
 	c.CTypes.Action = true
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 1}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 2}})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "remodel"})
-	c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "remodel"})
+
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["getHandTypeMax"] = 1
+	c.Effects.SeqVal["addValVal"] = 2
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "any", "oldcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "oldcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "oldcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getCost", "oldcard", "cardcost"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "oldcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"addVal", "cardcost"}})
+	sq = append(sq, cd.Seq{Seq: []string{"copyVal", "cardcost", "GainCardTypeMaxVal"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newtreasure"}})
+	c.Effects.Sequence = sq
+
+	/*
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 1}})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GetHandType: "remodel"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{SetVal: cd.SeqVar{Name: "remodel", Type: "any", Val: 2}})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{AddCost: "remodel"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{TrashCards: "remodel"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{ClearSet: "remodel"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{GainCard: "remodel"})
+		c.Effects.Sequence = append(c.Effects.Sequence, cd.Sequence{PlaceDiscards: "remodel"})
+	*/
 	return c
 }
-*/
 
 func InitialDeck() []cd.Card {
 	var d []cd.Card
