@@ -345,15 +345,17 @@ func matchType(c cd.Card, t string) bool {
 	return false
 }
 
-func findCards(h []cd.Card, mc cd.Card, m int) []cd.Card {
+func findCards(h []cd.Card, n string, m int) []cd.Card {
 	var fc []cd.Card
 	f := 0
 	for _, c := range h {
-		if c.Name == mc.Name {
+		if c.Name == n {
 			fc = append(fc, c)
 			f++
-			if f >= m {
-				break
+			if m > 0 {
+				if f >= m {
+					break
+				}
 			}
 		}
 	}
@@ -564,6 +566,17 @@ func resolveSequence(pg *Playgroup, p *Player, c cd.Card, effectType string) {
 					resolveEffects(pg, c)
 				}
 			}
+		case "GetHandMatch":
+			matchCard := seq.Seq[1]
+			cardSet := seq.Seq[2]
+			maxMatches := seqVal["GetHandMatchMax"]
+			mc := findCards(p.Hand.Cards, matchCard, maxMatches)
+			fmt.Println("\t\t\t GetHandMatch", matchCard, cardSet, maxMatches, "found", showQuick(mc))
+			seqCards[cardSet] = mc
+		case "AddXCoins":
+			cardSet := seq.Seq[1]
+			cardVal := seqVal["AddXCoinsVal"]
+			pg.ThisTurn.Coins += (len(seqCards[cardSet]) * cardVal)
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -1007,8 +1020,8 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
 	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
 
