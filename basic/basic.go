@@ -145,8 +145,9 @@ func DefCellar() cd.Card {
 	c.Effects.ExtraActions = 1
 	// actually nonUsable should be a decision point
 	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["getHandTypeMax"] = 0
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "nonUsable", "unusables"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "nonUsable", "unusables", "getHandTypeMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "unusables"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "unusables"}})
 	sq = append(sq, cd.Seq{Seq: []string{"countCards", "unusables", "cardCount"}})
@@ -165,9 +166,9 @@ func DefChapel() cd.Card {
 	c.Effects.SeqVal = make(map[string]int)
 	c.Effects.SeqVal["getHandTypeMax"] = 4
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "curse", "trashMax"}})
-	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "trashMax"}})
-	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "trashMax"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "curse", "trashThese", "getHandTypeMax"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "trashThese"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "trashThese"}})
 	c.Effects.Sequence = sq
 	return c
 }
@@ -191,7 +192,7 @@ func DefWorkshop() cd.Card {
 	c.Effects.SeqVal = make(map[string]int)
 	c.Effects.SeqVal["GainCardTypeMaxVal"] = 4
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newCard", "GainCardTypeMaxVal"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
 	c.Effects.Sequence = sq
 	return c
@@ -243,9 +244,10 @@ func DefVassal() cd.Card {
 	c.Effects.ExtraCoins = 2
 	c.Effects.SeqVal = make(map[string]int)
 	c.Effects.SeqVal["drawDeckMax"] = 1
+	c.Effects.SeqVal["getCardTypeMax"] = 0
 	sq := c.Effects.Sequence
 	sq = append(sq, cd.Seq{Seq: []string{"drawDeck", "drawDeckMax", "newCard"}})
-	sq = append(sq, cd.Seq{Seq: []string{"getCardType", "newCard", "action", "actionCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getCardType", "newCard", "action", "actionCard", "getCardTypeMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeCards", "actionCard", "newCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newCard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlayAction", "actionCard"}})
@@ -269,7 +271,7 @@ func DefBureaucrat() cd.Card {
 	c.Attacks.SeqVal = make(map[string]int)
 	c.Attacks.SeqVal["getHandTypeMax"] = 1
 	aq := c.Attacks.Sequence
-	aq = append(aq, cd.Seq{Seq: []string{"getHandType", "victory", "putdeck"}})
+	aq = append(aq, cd.Seq{Seq: []string{"getHandType", "victory", "putdeck", "getHandTypeMax"}})
 	aq = append(aq, cd.Seq{Seq: []string{"removeFromHands", "putdeck"}})
 	aq = append(aq, cd.Seq{Seq: []string{"PlaceDeck", "putdeck"}})
 	// or reveals a hand with no victory cards...
@@ -328,14 +330,14 @@ func DefMine() cd.Card {
 	c.Effects.SeqVal["getHandTypeMax"] = 1
 	c.Effects.SeqVal["addValVal"] = 3
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "treasure", "oldtreasure"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "treasure", "oldtreasure", "getHandTypeMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "oldtreasure"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "oldtreasure"}})
 	sq = append(sq, cd.Seq{Seq: []string{"getCost", "oldtreasure", "treasurecost"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "oldtreasure"}})
 	sq = append(sq, cd.Seq{Seq: []string{"addVal", "treasurecost"}})
 	sq = append(sq, cd.Seq{Seq: []string{"copyVal", "treasurecost", "GainCardTypeMaxVal"}})
-	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "treasure", "newtreasure"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "treasure", "newtreasure", "GainCardTypeMaxVal"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeHand", "newtreasure"}})
 	c.Effects.Sequence = sq
 	return c
@@ -351,14 +353,14 @@ func DefRemodel() cd.Card {
 	c.Effects.SeqVal["getHandTypeMax"] = 1
 	c.Effects.SeqVal["addValVal"] = 2
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "any", "oldcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "any", "oldcard", "getHandTypeMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "oldcard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "oldcard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"getCost", "oldcard", "cardcost"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeTrash", "oldcard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"addVal", "cardcost"}})
 	sq = append(sq, cd.Seq{Seq: []string{"copyVal", "cardcost", "GainCardTypeMaxVal"}})
-	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newcard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newcard", "GainCardTypeMaxVal"}})
 	sq = append(sq, cd.Seq{Seq: []string{"placeDiscards", "newtreasure"}})
 	c.Effects.Sequence = sq
 	return c
@@ -374,7 +376,7 @@ func DefThroneRoom() cd.Card {
 	c.Effects.SeqVal["getHandTypeMax"] = 1
 	c.Effects.SeqVal["PlayActionTimes"] = 2
 	sq := c.Effects.Sequence
-	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "action", "actioncard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"getHandType", "action", "actioncard", "getHandTypeMax"}})
 	sq = append(sq, cd.Seq{Seq: []string{"breakSet", "actioncard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "actioncard"}})
 	sq = append(sq, cd.Seq{Seq: []string{"PlayAction", "actionCard"}})

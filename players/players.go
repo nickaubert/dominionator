@@ -454,11 +454,12 @@ Sequence:
 		case "getHandType":
 			cardType := seq.Seq[1]
 			matchingCards := seq.Seq[2]
-			fmt.Println("\t\t\t getHandType", cardType, matchingCards)
+			getHandTypeMax := seqVal[seq.Seq[3]]
+			fmt.Println("\t\t\t getHandType", cardType, matchingCards, getHandTypeMax)
 			seqCards[matchingCards] = findCardType(p.Hand.Cards, cardType)
-			if seqVal["getHandTypeMax"] > 0 {
-				if seqVal["getHandTypeMax"] < len(seqCards[matchingCards]) {
-					seqCards[matchingCards] = seqCards[matchingCards][:seqVal["getHandTypeMax"]]
+			if getHandTypeMax > 0 {
+				if getHandTypeMax < len(seqCards[matchingCards]) {
+					seqCards[matchingCards] = seqCards[matchingCards][:getHandTypeMax]
 				}
 			}
 			fmt.Println("\t\t\t found", showQuick(seqCards[matchingCards]))
@@ -466,11 +467,12 @@ Sequence:
 			cardSet := seq.Seq[1]
 			cardType := seq.Seq[2]
 			matchingCards := seq.Seq[3]
+			getCardTypeMax := seqVal[seq.Seq[4]]
 			fmt.Println("\t\t\t getCardType", cardSet, cardType, matchingCards)
 			seqCards[matchingCards] = findCardType(seqCards[cardSet], cardType)
-			if seqVal["getCardTypeMax"] > 0 {
-				if seqVal["getCardTypeMax"] < len(seqCards[matchingCards]) {
-					seqCards[matchingCards] = seqCards[matchingCards][:seqVal["getCardTypeMax"]]
+			if getCardTypeMax > 0 {
+				if getCardTypeMax < len(seqCards[matchingCards]) {
+					seqCards[matchingCards] = seqCards[matchingCards][:getCardTypeMax]
 				}
 			}
 			fmt.Println("\t\t\t found", showQuick(seqCards[matchingCards]))
@@ -526,7 +528,7 @@ Sequence:
 		case "GainCardType":
 			cardType := seq.Seq[1]
 			newCard := seq.Seq[2]
-			maxVal := seqVal["GainCardTypeMaxVal"]
+			maxVal := seqVal[seq.Seq[3]]
 			fmt.Println("\t\t\t GainCardType", cardType, newCard, maxVal)
 			c := SelectCardBuy(maxVal, cardType, pg.Supply)
 			if c.Name == "" {
@@ -825,11 +827,11 @@ func resolveAttacks(pg *Playgroup, c cd.Card) {
 		}
 		if c.CTypes.Attack == true {
 			fmt.Println("\t\t Attacking", p.Name)
-		}
-		defended := checkReactions(p)
-		if defended == true {
-			fmt.Println("\t\t defended!")
-			continue
+			defended := checkReactions(p)
+			if defended == true {
+				fmt.Println("\t\t defended!")
+				continue
+			}
 		}
 		if c.Attacks.DiscardTo > 0 {
 			discardTo(p, c.Attacks.DiscardTo)
