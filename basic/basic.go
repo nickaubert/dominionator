@@ -384,6 +384,24 @@ func DefThroneRoom() cd.Card {
 	return c
 }
 
+func DefArtisan() cd.Card {
+	var c cd.Card
+	c.Name = "Artisan"
+	c.Cost = 6
+	c.CTypes.Action = true
+	c.Effects.SeqVal = make(map[string]int)
+	c.Effects.SeqVal["GainCardTypeMaxVal"] = 5
+	c.Effects.SeqVal["discardCount"] = 1
+	sq := c.Effects.Sequence
+	sq = append(sq, cd.Seq{Seq: []string{"GainCardType", "any", "newCard", "GainCardTypeMaxVal"}})
+	sq = append(sq, cd.Seq{Seq: []string{"placeHand", "newCard"}})
+	sq = append(sq, cd.Seq{Seq: []string{"selectDiscard", "putdeck", "discardCount"}})
+	sq = append(sq, cd.Seq{Seq: []string{"removeFromHands", "putdeck"}})
+	sq = append(sq, cd.Seq{Seq: []string{"PlaceDeck", "putdeck"}})
+	c.Effects.Sequence = sq
+	return c
+}
+
 func InitialDeck() []cd.Card {
 	var d []cd.Card
 	for i := 0; i < 7; i++ {

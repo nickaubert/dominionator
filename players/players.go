@@ -617,6 +617,16 @@ Sequence:
 			if len(seqCards[needSet]) < 1 {
 				break Sequence
 			}
+		case "selectDiscard":
+			discard := seq.Seq[1]
+			discardCount := seqVal[seq.Seq[2]]
+			for i := 0; i < discardCount; i++ {
+				d := selectDiscardOwn(p)
+				if d.Name != "" {
+					seqCards[discard] = append(seqCards[discard], d)
+				}
+			}
+			fmt.Println("\t\t\t selectDiscard", discard, discardCount, showQuick(seqCards[discard]))
 		default:
 			fmt.Println("ERROR: No operation", op)
 		}
@@ -1065,11 +1075,13 @@ func InitializeSupply(pl int) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefThroneRoom(), Count: 10})
 
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCouncilRoom(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-	// s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+
+	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefArtisan(), Count: 10})
 
 	return s
 }
