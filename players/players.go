@@ -299,6 +299,17 @@ func ShuffleDeck(p *Player) {
 	p.Deck.Cards = n
 }
 
+func ShuffleCards(d []cd.Card) []cd.Card {
+	rand.Seed(time.Now().UnixNano())
+	var n []cd.Card
+	for _ = range d {
+		r := rand.Intn(len(d))
+		n = append(n, d[r])
+		d = append(d[:r], d[r+1:]...)
+	}
+	return n
+}
+
 func findCardType(h []cd.Card, t string) []cd.Card {
 	var cs []cd.Card
 	for _, c := range h {
@@ -1055,57 +1066,72 @@ func InitializeSupply(pl int) cd.Supply {
 	/* curses */
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
 
+	for _, c := range initializeRandomizer(10) {
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: c, Count: 10})
+	}
+
 	/* kingdom */
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
-
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
-
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefThroneRoom(), Count: 10})
-
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCouncilRoom(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-
-	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefArtisan(), Count: 10})
+	/*
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefThroneRoom(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCouncilRoom(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
+		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefArtisan(), Count: 10})
+	*/
 
 	return s
 }
 
-/*
-func initializeRandomizer() []cd.Card {
+func initializeRandomizer(scount int) []cd.Card {
 
 	var rd []cd.Card
 
-	// kingdom
 	rd = append(rd, bs.DefCellar())
 	rd = append(rd, bs.DefChapel())
 	rd = append(rd, bs.DefMoat())
-	rd = append(rd, bs.DefVillage())
-	rd = append(rd, bs.DefWoodcutter())
 	rd = append(rd, bs.DefHarbinger())
-	rd = append(rd, bs.DefSmithy())
+	rd = append(rd, bs.DefVillage())
+	rd = append(rd, bs.DefWorkshop())
+	rd = append(rd, bs.DefWoodcutter())
+	rd = append(rd, bs.DefVassal())
+	rd = append(rd, bs.DefBureaucrat())
+	rd = append(rd, bs.DefRemodel())
+	rd = append(rd, bs.DefMoneylender())
 	rd = append(rd, bs.DefMilitia())
 	rd = append(rd, bs.DefGardens())
+	rd = append(rd, bs.DefSmithy())
+	rd = append(rd, bs.DefThroneRoom())
+	rd = append(rd, bs.DefCouncilRoom())
+	rd = append(rd, bs.DefMine())
 	rd = append(rd, bs.DefFestival())
 	rd = append(rd, bs.DefLaboratory())
 	rd = append(rd, bs.DefMarket())
 	rd = append(rd, bs.DefWitch())
+	rd = append(rd, bs.DefArtisan())
 
+	rd = ShuffleCards(rd)
+	fmt.Println("randomizer", showQuick(rd))
+	if scount < len(rd) {
+		rd = rd[:scount]
+	}
+	fmt.Println("randomized", showQuick(rd))
 	return rd
+
 }
-*/

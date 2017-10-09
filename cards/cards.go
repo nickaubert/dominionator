@@ -29,7 +29,7 @@ type Effect struct {
 	ExtraCoins   int
 	Sequence     []Seq
 	SeqVal       map[string]int
-	/* http://wiki.dominionstrategy.com/index.php/Gameplay
+	* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
 	   Trash (from hand or from deck) to Trash
@@ -37,20 +37,22 @@ type Effect struct {
 }
 
 /*
-   New logic: get rid of Sequence struct
-   Pass in name of operation and parameters, including names of (typed) variables
-   eg. Cellar
-           "getHandType", "nonUsable", "unusables"
-           "removeFromHand", "unusables"
-           "countCards", "unusables", "cardCount"
-           "placeDiscards", "unusables"
-           "drawDeck", "cardCount", "newCards"
-           "placeHand", "newCards"
-       first string is always operation name
-       "nonUsable" gets passed to GetCardType function
-       "unusables" is the name of a []cd.Card
-       "cardCount" is the name of an int
-       "newCards" is the name of a []cd.Card
+   New logic: map of sequence slice
+        need to split setup sequence and sequence range loop?
+        most cards use card name as key to sequence map
+            sq := c.Effects.Sequence[c.Name]
+        Library:
+            sq := c.Effects.Sequence[c.Name]
+            c.Effects.SeqVal["wantCards"] = 7
+            c.Effects.SeqVal["drawDeckMax"] = 1
+            c.Effects.SeqVal["getCardTypeMax"] = 0
+            "Library":          "checkHandCount", "wantCards", "getnonactioncard"
+            "getnonactioncard": "drawDeck", "drawDeckMax", "newCard"
+            "getnonactioncard": "getCardType", "newCard", "action", "actionCard", "getCardTypeMax"
+            "getnonactioncard": "removeCards", "actionCard", "newCard"
+            "getnonactioncard": "placeDiscards", "actionCard"
+            "getnonactioncard": "placeHand", "newCard"
+            
 */
 
 type Seq struct {

@@ -4,7 +4,6 @@ package main
    TODO:
     Unit tests!
    Randomizer deck
-   Throne Room (make sure card doesnt duplicate)
 ***************************************/
 
 import (
@@ -23,7 +22,6 @@ func main() {
 		p := &pg.Players[n]
 		pl.ShuffleDeck(p)
 		nc := pl.Draw(p, 5)
-		// pl.AddHand(&pg.Players[n], nc)
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 
@@ -37,7 +35,7 @@ func main() {
 	for {
 
 		turnCount++
-		fmt.Println("Turn", turnCount)
+		fmt.Printf("Turn %d: ", turnCount)
 		endGame := pl.PlayTurn(&pg)
 
 		if endGame == true {
