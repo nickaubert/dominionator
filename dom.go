@@ -7,7 +7,9 @@ package main
 ***************************************/
 
 import (
+	"bufio"
 	"fmt"
+	// "io"
 	"io/ioutil"
 	"os"
 )
@@ -20,6 +22,7 @@ import yaml "gopkg.in/yaml.v2"
 func main() {
 
 	cnf := checkConfig("dom.yaml")
+	defer cnf.Buffer.Flush()
 
 	fmt.Println("Dominion!")
 	fmt.Println()
@@ -32,9 +35,10 @@ func main() {
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 
-	fmt.Println("starting supply:")
+	fmt.Fprintln(cnf.Buffer, "starting supply:")
+	cnf.Buffer.Flush()
 	for _, p := range pg.Supply.Piles {
-		fmt.Println("pile", p.Count, p.Card.Name)
+		fmt.Fprintln(cnf.Buffer, "pile", p.Count, p.Card.Name)
 	}
 	fmt.Println()
 
@@ -42,31 +46,30 @@ func main() {
 	for {
 
 		turnCount++
-		fmt.Printf("Turn %d: ", turnCount)
-		endGame := pl.PlayTurn(&pg)
+		fmt.Fprintf(cnf.Buffer, "Turn %d: ", turnCount)
+		endGame := pl.PlayTurn(&pg, cnf)
 
 		if endGame == true {
 			break
 		}
 
 		if turnCount > 200 {
-			fmt.Println("Interrupted game at turn 201")
+			fmt.Fprintln(cnf.Buffer, "Interrupted game at turn 201")
 			break
 		}
 
 	}
 
-	fmt.Println(turnCount, "turns")
-	fmt.Println("ending supply:")
+	fmt.Fprintln(cnf.Buffer, "ending supply:")
 	for _, p := range pg.Supply.Piles {
-		fmt.Println("pile", p.Count, p.Card.Name)
+		fmt.Fprintln(cnf.Buffer, "pile", p.Count, p.Card.Name)
 	}
-	fmt.Print("ending trash: ")
+	fmt.Fprintln(cnf.Buffer, "ending trash: ")
 	for _, c := range pg.Trash.Cards {
-		fmt.Print(c.Name, ", ")
+		fmt.Fprint(cnf.Buffer, c.Name, ", ")
 	}
-	fmt.Print("\n")
-	fmt.Println()
+	fmt.Fprint(cnf.Buffer, "\n")
+	fmt.Fprintln(cnf.Buffer)
 
 	pl.CheckScores(pg)
 
@@ -88,16 +91,23 @@ func checkConfig(file string) pl.Config {
 		os.Exit(1)
 	}
 
-	/*
-		for _, kc := range cnf.Kingdom {
-			fmt.Println("cards", kc)
-		}
-	*/
-
 	if pl.ValidateCards(cnf.Kingdom) != true {
 		fmt.Println("Error: Invalid Dominion card!")
 		os.Exit(2)
 	}
+
+	fmt.Println("logfile:", cnf.Logfile)
+	w := bufio.NewWriter(ioutil.Discard)
+	if cnf.Logfile != "" {
+		f, err := os.Create(cnf.Logfile)
+		if err != nil {
+			fmt.Println("Error:", err)
+			os.Exit(2)
+		}
+		// defer f.Close()
+		w = bufio.NewWriter(f)
+	}
+	cnf.Buffer = w
 
 	return cnf
 
