@@ -29,7 +29,7 @@ type Effect struct {
 	ExtraCoins   int
 	Sequence     []Seq
 	SeqVal       map[string]int
-	* http://wiki.dominionstrategy.com/index.php/Gameplay
+	/* http://wiki.dominionstrategy.com/index.php/Gameplay
 	   Discard (from hand or from deck) to Discard
 	   Gain (to hand or to deck) from Supply
 	   Trash (from hand or from deck) to Trash
@@ -52,7 +52,7 @@ type Effect struct {
             "getnonactioncard": "removeCards", "actionCard", "newCard"
             "getnonactioncard": "placeDiscards", "actionCard"
             "getnonactioncard": "placeHand", "newCard"
-            
+
 */
 
 type Seq struct {

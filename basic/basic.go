@@ -415,6 +415,36 @@ func InitialDeck() []cd.Card {
 	return d
 }
 
+func AvailableCards() []cd.Card {
+
+	var rd []cd.Card
+
+	rd = append(rd, DefCellar())
+	rd = append(rd, DefChapel())
+	rd = append(rd, DefMoat())
+	rd = append(rd, DefHarbinger())
+	rd = append(rd, DefVillage())
+	rd = append(rd, DefWorkshop())
+	rd = append(rd, DefWoodcutter())
+	rd = append(rd, DefVassal())
+	rd = append(rd, DefBureaucrat())
+	rd = append(rd, DefRemodel())
+	rd = append(rd, DefMoneylender())
+	rd = append(rd, DefMilitia())
+	rd = append(rd, DefGardens())
+	rd = append(rd, DefSmithy())
+	rd = append(rd, DefThroneRoom())
+	rd = append(rd, DefCouncilRoom())
+	rd = append(rd, DefMine())
+	rd = append(rd, DefFestival())
+	rd = append(rd, DefLaboratory())
+	rd = append(rd, DefMarket())
+	rd = append(rd, DefWitch())
+	rd = append(rd, DefArtisan())
+
+	return rd
+}
+
 //func InitializeSupply(pl int) cd.Supply {
 //
 //	var s cd.Supply

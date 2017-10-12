@@ -35,16 +35,21 @@ type ThisTurn struct {
 	Buys    int
 }
 
-func InitializePlaygroup(s int) Playgroup {
+type Config struct {
+	Players int
+	Kingdom []string
+}
+
+func InitializePlaygroup(cnf Config) Playgroup {
 	var pg Playgroup
-	for i := 0; i < s; i++ {
+	for i := 0; i < cnf.Players; i++ {
 		var pl Player
 		pl.Deck.Cards = bs.InitialDeck()
 		pl.Name = fmt.Sprintf("Player%d", i)
 		pg.Players = append(pg.Players, pl)
 	}
 	pg.PlayerTurn = 0
-	pg.Supply = InitializeSupply(s)
+	pg.Supply = InitializeSupply(cnf)
 	return pg
 }
 
@@ -1038,7 +1043,9 @@ func validateCards(cs []cd.Card, pname, cardset string) {
 	}
 }
 
-func InitializeSupply(pl int) cd.Supply {
+func InitializeSupply(cnf Config) cd.Supply {
+
+	pl := cnf.Players
 
 	var s cd.Supply
 
@@ -1101,30 +1108,33 @@ func InitializeSupply(pl int) cd.Supply {
 
 func initializeRandomizer(scount int) []cd.Card {
 
-	var rd []cd.Card
+	rd := bs.AvailableCards()
 
-	rd = append(rd, bs.DefCellar())
-	rd = append(rd, bs.DefChapel())
-	rd = append(rd, bs.DefMoat())
-	rd = append(rd, bs.DefHarbinger())
-	rd = append(rd, bs.DefVillage())
-	rd = append(rd, bs.DefWorkshop())
-	rd = append(rd, bs.DefWoodcutter())
-	rd = append(rd, bs.DefVassal())
-	rd = append(rd, bs.DefBureaucrat())
-	rd = append(rd, bs.DefRemodel())
-	rd = append(rd, bs.DefMoneylender())
-	rd = append(rd, bs.DefMilitia())
-	rd = append(rd, bs.DefGardens())
-	rd = append(rd, bs.DefSmithy())
-	rd = append(rd, bs.DefThroneRoom())
-	rd = append(rd, bs.DefCouncilRoom())
-	rd = append(rd, bs.DefMine())
-	rd = append(rd, bs.DefFestival())
-	rd = append(rd, bs.DefLaboratory())
-	rd = append(rd, bs.DefMarket())
-	rd = append(rd, bs.DefWitch())
-	rd = append(rd, bs.DefArtisan())
+	/*
+		var rd []cd.Card
+		rd = append(rd, bs.DefCellar())
+		rd = append(rd, bs.DefChapel())
+		rd = append(rd, bs.DefMoat())
+		rd = append(rd, bs.DefHarbinger())
+		rd = append(rd, bs.DefVillage())
+		rd = append(rd, bs.DefWorkshop())
+		rd = append(rd, bs.DefWoodcutter())
+		rd = append(rd, bs.DefVassal())
+		rd = append(rd, bs.DefBureaucrat())
+		rd = append(rd, bs.DefRemodel())
+		rd = append(rd, bs.DefMoneylender())
+		rd = append(rd, bs.DefMilitia())
+		rd = append(rd, bs.DefGardens())
+		rd = append(rd, bs.DefSmithy())
+		rd = append(rd, bs.DefThroneRoom())
+		rd = append(rd, bs.DefCouncilRoom())
+		rd = append(rd, bs.DefMine())
+		rd = append(rd, bs.DefFestival())
+		rd = append(rd, bs.DefLaboratory())
+		rd = append(rd, bs.DefMarket())
+		rd = append(rd, bs.DefWitch())
+		rd = append(rd, bs.DefArtisan())
+	*/
 
 	rd = ShuffleCards(rd)
 	fmt.Println("randomizer", showQuick(rd))
