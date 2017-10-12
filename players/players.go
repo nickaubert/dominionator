@@ -161,9 +161,6 @@ func Draw(p *Player, d int) []cd.Card {
 	}
 	for i := 0; i < d; i++ {
 		// fmt.Println("deck size", len(p.Deck.Cards))
-		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
-		p.Deck.Cards = z
-		nc = append(nc, c)
 		if len(p.Deck.Cards) == 0 {
 			p.Deck.Cards = p.Discard.Cards
 			p.Discard.Cards = p.Discard.Cards[:0]
@@ -173,6 +170,9 @@ func Draw(p *Player, d int) []cd.Card {
 			fmt.Println("Out of cards!")
 			break
 		}
+		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
+		p.Deck.Cards = z
+		nc = append(nc, c)
 	}
 	if len(nc) < d {
 		fmt.Println("WARNING: Not enough cards in deck to draw!")
@@ -1073,8 +1073,14 @@ func InitializeSupply(cnf Config) cd.Supply {
 	/* curses */
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
 
-	for _, c := range initializeRandomizer(10) {
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: c, Count: 10})
+	if cnf.Kingdom[0] == "random" {
+		for _, c := range initializeRandomizer(10) {
+			s.Piles = append(s.Piles, cd.SupplyPile{Card: c, Count: 10})
+		}
+	} else {
+		for _, name := range cnf.Kingdom {
+			s.Piles = append(s.Piles, cd.SupplyPile{Card: GetCard(name), Count: 10})
+		}
 	}
 
 	/* kingdom */
@@ -1144,4 +1150,53 @@ func initializeRandomizer(scount int) []cd.Card {
 	fmt.Println("randomized", showQuick(rd))
 	return rd
 
+}
+
+func ValidateCards(cds []string) bool {
+
+	if len(cds) == 1 {
+		if cds[0] == "random" {
+			return true
+		}
+		fmt.Println("Unknown Dominion card:", cds[0])
+		return false
+	}
+
+	if len(cds) != 10 {
+		fmt.Println("ERROR: Need 10 Cards!")
+		return false
+	}
+
+	for _, cn := range cds {
+		// fmt.Println("name:", cn)
+		mc := GetCard(cn)
+		if mc.Name == "" {
+			fmt.Println("Unknown Dominion card:", cn)
+			return false
+		}
+
+		/*
+		   matched := false
+		   for _, ac := range bs.AvailableCards() {
+		       if cd == ac.Name {
+		           matched = true
+		       }
+		   }
+
+		   if matched == false {
+		       fmt.Println("Unknown Dominion card:", cd)
+		       return false
+		   }
+		*/
+	}
+	return true
+}
+
+func GetCard(name string) cd.Card {
+	for _, ac := range bs.AvailableCards() {
+		if name == ac.Name {
+			return ac
+		}
+	}
+	return cd.Card{} // empty card
 }

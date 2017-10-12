@@ -88,15 +88,16 @@ func checkConfig(file string) pl.Config {
 		os.Exit(1)
 	}
 
-	for _, kc := range cnf.Kingdom {
-		fmt.Println("cards", kc)
-	}
-
 	/*
-	   for _, c := range pl.initializeRandomizer(10) {
-	       s.Piles = append(s.Piles, cd.SupplyPile{Card: c, Count: 10})
-	   }
+		for _, kc := range cnf.Kingdom {
+			fmt.Println("cards", kc)
+		}
 	*/
+
+	if pl.ValidateCards(cnf.Kingdom) != true {
+		fmt.Println("Error: Invalid Dominion card!")
+		os.Exit(2)
+	}
 
 	return cnf
 
