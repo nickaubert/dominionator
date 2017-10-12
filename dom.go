@@ -3,20 +3,16 @@ package main
 /***************************************
    TODO:
     Unit tests!
-   Randomizer deck
 ***************************************/
 
 import (
 	"bufio"
 	"fmt"
-	// "io"
 	"io/ioutil"
 	"os"
 )
 
 import pl "github.com/nickaubert/dominionator/players"
-
-// import bs "github.com/nickaubert/dominionator/basic"
 import yaml "gopkg.in/yaml.v2"
 
 func main() {
@@ -25,7 +21,6 @@ func main() {
 	defer cnf.Buffer.Flush()
 
 	fmt.Println("Dominion!")
-	fmt.Println()
 
 	pg := pl.InitializePlaygroup(cnf)
 	for n := range pg.Players {
@@ -40,7 +35,7 @@ func main() {
 	for _, p := range pg.Supply.Piles {
 		fmt.Fprintln(cnf.Buffer, "pile", p.Count, p.Card.Name)
 	}
-	fmt.Println()
+	// fmt.Println()
 
 	turnCount := 0
 	for {
@@ -104,7 +99,6 @@ func checkConfig(file string) pl.Config {
 			fmt.Println("Error:", err)
 			os.Exit(2)
 		}
-		// defer f.Close()
 		w = bufio.NewWriter(f)
 	}
 	cnf.Buffer = w

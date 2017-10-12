@@ -59,43 +59,6 @@ type Seq struct {
 	Seq []string
 }
 
-/*
-type Sequence struct {
-	SetVal          SeqVar // set value
-	TrashMax        string // max cards to trash
-	RetrieveDiscard string // max cards to pull from discard
-	PlaceDeck       string // Place cards onto deck
-	PlaceDiscards   string // place cardSet in discard
-	GetSupplyCard   string // get this card from supply
-	// GetHandTypeX    string // get one of this card type from hand
-	GetHandType string // get any of this card type from hand
-	// DrawCount       string // Draw "X" cards
-	DrawDeck        string // max cards to draw from deck
-	DiscardNonMatch string // discard non-matching cards from set
-	PlayAction      string // play action this many times
-	CountCards      string
-	ClearSet        string
-	GainCard        string
-	AddCost         string
-	TrashCards      string
-	// PlaceHand       string
-	PlaceHands     string
-	AddXCoins      string // add "X" * int coins
-	GetHandMatch   string
-	RemoveFromHand string
-}
-*/
-
-/*
-type SeqVar struct {
-	Name    string
-	Val     int
-	Card    Card
-	Type    string
-	NewName string
-}
-*/
-
 type Attack struct {
 	DiscardTo int
 	GainCurse int

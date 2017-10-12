@@ -82,7 +82,6 @@ func PlayTurn(pg *Playgroup, cnf Config) bool {
 func ActionPhase(pg *Playgroup, cnf Config) {
 
 	p := &pg.Players[pg.PlayerTurn]
-	// fmt.Println("\t ActionPhase")
 	fmt.Fprintln(cnf.Buffer, "\t ActionPhase")
 
 	// decision which action cards to play will go here
@@ -94,10 +93,8 @@ func ActionPhase(pg *Playgroup, cnf Config) {
 		if len(ac) == 0 {
 			break
 		}
-		// showCards("hand", p.Hand)
 		fmt.Fprintln(cnf.Buffer, "\t\t hand:", showQuick(p.Hand.Cards))
 		c := getCard(&p.Hand, highestCostCard(ac))
-		// fmt.Println("\t\t playing", c.Name)
 		fmt.Fprintln(cnf.Buffer, "\t\t playing", c.Name)
 		pg.ThisTurn.Actions--
 		p.InPlay.Cards = append(p.InPlay.Cards, c)
@@ -112,9 +109,7 @@ func ActionPhase(pg *Playgroup, cnf Config) {
 func BuyPhase(pg *Playgroup, cnf Config) {
 
 	p := &pg.Players[pg.PlayerTurn]
-	// fmt.Println("\t BuyPhase")
 	fmt.Fprintln(cnf.Buffer, "\t BuyPhase")
-	// showCards("hand", p.Hand)
 	fmt.Fprintln(cnf.Buffer, "\t\t hand:", showQuick(p.Hand.Cards))
 
 	for pg.ThisTurn.Buys > 0 {
@@ -128,13 +123,11 @@ func BuyPhase(pg *Playgroup, cnf Config) {
 			pg.ThisTurn.Coins += c.Coins
 		}
 
-		// fmt.Println("\t\t", pg.ThisTurn.Coins, "coins to spend")
 		fmt.Fprintln(cnf.Buffer, "\t\t", pg.ThisTurn.Coins, "coins to spend")
 		c := SelectCardBuy(pg.ThisTurn.Coins, "any", pg.Supply)
 		if c.Name == "" {
 			break
 		}
-		// fmt.Println("\t\t buying", c.Name)
 		fmt.Fprintln(cnf.Buffer, "\t\t buying", c.Name)
 		c = gainCard(&pg.Supply, c.Name)
 		if c.Name == "" {
@@ -149,7 +142,6 @@ func BuyPhase(pg *Playgroup, cnf Config) {
 }
 
 func CleanupPhase(pg *Playgroup, cnf Config) {
-	// fmt.Println("\t CleanupPhase")
 	fmt.Fprintln(cnf.Buffer, "\t CleanupPhase")
 	p := &pg.Players[pg.PlayerTurn]
 	p.Discard.Cards = append(p.Discard.Cards, p.InPlay.Cards...)
@@ -171,7 +163,6 @@ func Draw(p *Player, d int) []cd.Card {
 		}
 	}
 	for i := 0; i < d; i++ {
-		// fmt.Println("deck size", len(p.Deck.Cards))
 		if len(p.Deck.Cards) == 0 {
 			p.Deck.Cards = p.Discard.Cards
 			p.Discard.Cards = p.Discard.Cards[:0]
@@ -233,21 +224,6 @@ func SelectCardBuy(o int, t string, s cd.Supply) cd.Card {
 	c := bestCards[r]
 	return c
 }
-
-/*
-func gainCard(s *cd.Supply, c cd.Card) cd.Card {
-	for n, pl := range s.Piles {
-		if pl.Card.Name == c.Name {
-			if s.Piles[n].Count == 0 {
-				return cd.Card{}
-			}
-			s.Piles[n].Count--
-			return c
-		}
-	}
-	return cd.Card{}
-}
-*/
 
 func gainCard(s *cd.Supply, n string) cd.Card {
 	for i, pl := range s.Piles {
@@ -457,12 +433,8 @@ func resolveEffects(pg *Playgroup, c cd.Card, cnf Config) {
 		}
 	}
 
-	resolveAttacks(pg, c, cnf)
 	// hm, "Attacks" not the only effect on other players
-	// if c.CTypes.Attack == true {
-	//	resolveAttacks(pg, c)
-	// }
-
+	resolveAttacks(pg, c, cnf)
 	resolveSequence(pg, p, c, "effect", cnf)
 }
 
@@ -661,202 +633,6 @@ Sequence:
 	}
 }
 
-/*
-func resolveSequence(pg *Playgroup, p *Player, seq []cd.Sequence) {
-	var cardSet []cd.Card
-	// var gainCost int
-	seqCards := make(map[string][]cd.Card)
-	seqCardX := make(map[string]cd.Card)
-	seqVal := make(map[string]int)
-	seqType := make(map[string]string)
-	for i, s := range seq {
-		fmt.Println("\t\t\t Sequence", i)
-		if s.SetVal.Name != "" {
-			fmt.Println("\t\t\t\t SetVal", s.SetVal.Name)
-			seqVal[s.SetVal.Name] = s.SetVal.Val
-			seqType[s.SetVal.Name] = s.SetVal.Type
-			seqCardX[s.SetVal.Name] = s.SetVal.Card
-			seqCards[s.SetVal.Name] = append(seqCards[s.SetVal.Name], s.SetVal.Card)
-		}
-			if s.CountDiscard != "" {
-				// decision point here
-				vc := findCardType(p.Hand.Cards, "nonUsable")
-				discardCards(p, vc)
-				seqVal[s.CountDiscard] = len(vc)
-				fmt.Println("\t\t\t\t CountDiscard", seqVal[s.CountDiscard])
-			}
-			if s.DrawCount != "" {
-				nc := Draw(p, seqVal[s.DrawCount])
-				p.Hand.Cards = append(p.Hand.Cards, nc...)
-				fmt.Println("\t\t\t\t DrawCount", seqVal[s.DrawCount])
-			}
-		if s.TrashMax != "" {
-			// decision point here
-			cc := findCardType(p.Hand.Cards, "curse")
-			for j, u := range cc {
-				if j > seqVal[s.TrashMax] {
-					break
-				}
-				removeFromHand(p, u)
-				trashFromHand(p, pg, u)
-				cardSet = append(cardSet, u)
-			}
-			fmt.Println("\t\t\t\t TrashMax", s.TrashMax, len(cardSet))
-		}
-		if s.RetrieveDiscard != "" {
-			fmt.Println("\t\t\t\t RetrieveDiscard", seqVal[s.RetrieveDiscard])
-			var cs []cd.Card
-			for j := 0; j < seqVal[s.RetrieveDiscard]; j++ {
-				// decision point here
-				bc := bestPlayableCard(p.Discard.Cards)
-				// must have found something
-				if bc.Name != "" {
-					removeFromDiscard(p, bc)
-					cs = append(cs, bc)
-				}
-			}
-			seqCards[s.RetrieveDiscard] = cs
-		}
-		if s.PlaceDeck != "" {
-			fmt.Println("\t\t\t\t PlaceDeck", showQuick(seqCards[s.PlaceDeck]))
-			addDeckTop(p, seqCards[s.PlaceDeck])
-		}
-		if s.GetSupplyCard != "" {
-			fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard)
-			c := gainCard(&pg.Supply, seqCardX[s.GetSupplyCard])
-			if c.Name == "" {
-				fmt.Println("\t\t\t\t GetSupplyCard", s.GetSupplyCard, "no card to match")
-				continue
-			}
-			var cs []cd.Card
-			cs = append(cs, c)
-			seqCards[s.GetSupplyCard] = cs
-		}
-			if s.GetHandTypeX != "" {
-				// TODO: set count
-				vc := findCardType(p.Hand.Cards, seqType[s.GetHandTypeX])
-				var cs []cd.Card
-				if len(vc) > 0 {
-					cs = append(cs, vc[0])
-				}
-				fmt.Println("\t\t\t\t GetHandTypeX", s.GetHandTypeX, seqType[s.GetHandTypeX], "found", showQuick(cs))
-				seqCards[s.GetHandTypeX] = cs
-			}
-		if s.GetHandType != "" {
-			vc := findCardType(p.Hand.Cards, seqType[s.GetHandType])
-			if len(vc) == 0 {
-				fmt.Println("\t\t\t\t GetHandType", s.GetHandType, seqType[s.GetHandType], "no match")
-			}
-			maxCards := len(vc)
-			if seqVal[s.GetHandType] > 0 {
-				if seqVal[s.GetHandType] < maxCards {
-					maxCards = seqVal[s.GetHandType]
-				}
-			}
-			var cs []cd.Card
-			cs = append(cs, vc[:maxCards]...)
-			fmt.Println("\t\t\t\t GetHandType", s.GetHandType, seqType[s.GetHandType], "found", showQuick(cs))
-			seqCards[s.GetHandType] = cs
-		}
-		if s.GetHandMatch != "" {
-			// TODO: set count
-			fmt.Println("\t\t\t\t GetHandMatch", s.GetHandMatch, seqCardX[s.GetHandMatch].Name)
-			fmt.Println("\t\t\t\t GetHandMatch set1", showQuick(seqCards[s.GetHandMatch]))
-			mc := findCards(p.Hand.Cards, seqCardX[s.GetHandMatch], 1)
-			fmt.Println("\t\t\t\t GetHandMatch cs", showQuick(mc))
-			var cs []cd.Card
-			if len(mc) > 0 {
-				cs = append(cs, mc[0])
-			}
-			seqCards[s.GetHandMatch] = cs
-			fmt.Println("\t\t\t\t GetHandMatch set2", showQuick(seqCards[s.GetHandMatch]))
-		}
-		if s.DrawDeck != "" {
-			fmt.Println("\t\t\t\t DrawDeck", s.DrawDeck, seqVal[s.DrawDeck])
-			var cs []cd.Card
-			cs = append(cs, Draw(p, seqVal[s.DrawDeck])...)
-			seqCards[s.DrawDeck] = cs
-			fmt.Println("\t\t\t\t drew", showQuick(cs))
-		}
-		if s.DiscardNonMatch != "" {
-			fmt.Println("\t\t\t\t DiscardNonMatch", s.DiscardNonMatch, seqType[s.DiscardNonMatch])
-			var oldSet Cards
-			oldSet.Cards = seqCards[s.DiscardNonMatch]
-			seqCards[s.DiscardNonMatch] = getCards(&oldSet, findCardType(oldSet.Cards, seqType[s.DiscardNonMatch]))
-			p.Discard.Cards = append(p.Discard.Cards, oldSet.Cards...)
-		}
-		if s.PlayAction != "" {
-			fmt.Println("\t\t\t\t PlayAction", s.PlayAction, seqVal[s.PlayAction])
-			// possible decision point here whether to play any action
-			for _, c := range seqCards[s.PlayAction] {
-				fmt.Println("\t\t\t seq play action", c.Name)
-				p.InPlay.Cards = append(p.InPlay.Cards, c)
-				for j := 0; j < seqVal[s.PlayAction]; j++ {
-					resolveEffects(pg, c)
-				}
-			}
-		}
-		if s.GainCard != "" {
-			fmt.Println("\t\t\t\t GainCard", s.GainCard, seqVal[s.GainCard], seqType[s.GainCard])
-			c := SelectCardBuy(seqVal[s.GainCard], seqType[s.GainCard], pg.Supply)
-			if c.Name == "" {
-				fmt.Println("\t\t\t\t GainCard no card to match")
-				continue
-			}
-			fmt.Println("\t\t\t\t seqCards", showQuick(seqCards[s.GainCard]), len(seqCards[s.GainCard]), "gained", c.Name)
-			seqCards[s.GainCard] = append(seqCards[s.GainCard], c)
-		}
-		if s.PlaceDiscards != "" {
-			fmt.Println("\t\t\t\t PlaceDiscards", s.PlaceDiscards, showQuick(seqCards[s.PlaceDiscards]))
-			if len(seqCards[s.PlaceDiscards]) > 0 {
-				p.Discard.Cards = append(p.Discard.Cards, seqCards[s.PlaceDiscards]...)
-			}
-		}
-			if s.PlaceHand != "" {
-				fmt.Println("\t\t\t\t PlaceHand", s.PlaceHand, seqCardX[s.PlaceHand].Name)
-				p.Hand.Cards = append(p.Hand.Cards, seqCardX[s.PlaceHand])
-			}
-		if s.PlaceHands != "" {
-			fmt.Println("\t\t\t\t PlaceHands", s.PlaceHands, seqCardX[s.PlaceHands].Name)
-			if len(seqCards[s.PlaceHands]) > 0 {
-				p.Hand.Cards = append(p.Hand.Cards, seqCards[s.PlaceHands]...)
-			}
-		}
-		if s.AddCost != "" {
-			o := 0
-			for _, c := range seqCards[s.AddCost] {
-				fmt.Println("\t\t\t\t AddCost", s.AddCost, c.Name)
-				o += c.Cost
-			}
-			seqVal[s.AddCost] += o
-		}
-		if s.TrashCards != "" {
-			for _, c := range seqCards[s.TrashCards] {
-				fmt.Println("\t\t\t\t TrashCards", c.Name)
-				getCard(&p.Hand, c) // remove from hand
-				pg.Trash.Cards = append(pg.Trash.Cards, c)
-			}
-		}
-		if s.AddXCoins != "" {
-			fmt.Println("\t\t\t\t AddXCoins", s.AddXCoins, seqVal[s.AddXCoins])
-			pg.ThisTurn.Coins += (len(seqCards[s.AddXCoins]) * seqVal[s.AddXCoins])
-		}
-		if s.CountCards != "" {
-			seqVal[s.CountCards] = len(seqCards[s.CountCards])
-			fmt.Println("\t\t\t\t CountCards", s.CountCards, seqVal[s.CountCards])
-		}
-		if s.ClearSet != "" {
-			fmt.Println("\t\t\t\t ClearSet", s.ClearSet)
-			seqCards[s.ClearSet] = seqCards[s.ClearSet][:0]
-		}
-		if s.RemoveFromHand != "" {
-			fmt.Println("\t\t\t\t RemoveFromHand", s.RemoveFromHand, showQuick(seqCards[s.RemoveFromHand]))
-			getCards(&p.Hand, seqCards[s.RemoveFromHand]) // remove from hand
-		}
-	}
-}
-*/
-
 func resolveAttacks(pg *Playgroup, c cd.Card, cnf Config) {
 	for i := range pg.Players {
 		p := &pg.Players[i]
@@ -864,7 +640,6 @@ func resolveAttacks(pg *Playgroup, c cd.Card, cnf Config) {
 			continue
 		}
 		if c.CTypes.Attack == true {
-			// fmt.Println("\t\t Attacking", p.Name)
 			fmt.Fprintln(cnf.Buffer, "\t\t Attacking", p.Name)
 			defended := checkReactions(p)
 			if defended == true {
@@ -881,18 +656,7 @@ func resolveAttacks(pg *Playgroup, c cd.Card, cnf Config) {
 		// resolveSequence(pg, p, c.Attacks.Sequence, c.Attacks.SeqVal)
 		resolveSequence(pg, p, c, "attack", cnf)
 	}
-	// fmt.Println("\t\t finished attacks")
 }
-
-/*
-func showCards(s string, h Cards) {
-	fmt.Print("\t\t", s, ": ")
-	for _, c := range h.Cards {
-		fmt.Print(c.Name, ", ")
-	}
-	fmt.Print("\n")
-}
-*/
 
 func showQuick(cs []cd.Card) string {
 	var disp string
@@ -909,16 +673,9 @@ func showStatus(pg *Playgroup, cnf Config) {
 }
 
 func discardCards(p *Player, cs []cd.Card) {
-	// fmt.Print("\t\t\t discarding ")
-	// fmt.Fprint(cnf.Buffer, "\t\t\t discarding")
 	for _, c := range cs {
-		// removeFromHand(p, c)
-		// fmt.Print(c.Name, ", ")
-		// fmt.Fprint(cnf.Buffer, c.Name, ", ")
 		p.Discard.Cards = append(p.Discard.Cards, c)
 	}
-	// fmt.Print("\n")
-	// fmt.Fprint(cnf.Buffer, "\n")
 }
 
 func selectDiscardOwn(p *Player) cd.Card {
@@ -941,7 +698,6 @@ func discardTo(p *Player, m int) {
 
 func gainCurse(p *Player, s *cd.Supply, m int) {
 	for i := 0; i < m; i++ {
-		// c := gainCard(s, bs.DefCurse())
 		c := gainCard(s, "Curse")
 		if c.Name == "Curse" {
 			p.Discard.Cards = append(p.Discard.Cards, c)
@@ -1092,7 +848,7 @@ func InitializeSupply(cnf Config) cd.Supply {
 	s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCurse(), Count: 10 * (pl - 1)})
 
 	if cnf.Kingdom[0] == "random" {
-		for _, c := range initializeRandomizer(10) {
+		for _, c := range initializeRandomizer(10, cnf) {
 			s.Piles = append(s.Piles, cd.SupplyPile{Card: c, Count: 10})
 		}
 	} else {
@@ -1101,71 +857,19 @@ func InitializeSupply(cnf Config) cd.Supply {
 		}
 	}
 
-	/* kingdom */
-	/*
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCellar(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefChapel(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoat(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefHarbinger(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVillage(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWorkshop(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWoodcutter(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefVassal(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefBureaucrat(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefRemodel(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMoneylender(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMilitia(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefGardens(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefSmithy(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefThroneRoom(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefCouncilRoom(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMine(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefFestival(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefLaboratory(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefMarket(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefWitch(), Count: 10})
-		s.Piles = append(s.Piles, cd.SupplyPile{Card: bs.DefArtisan(), Count: 10})
-	*/
-
 	return s
 }
 
-func initializeRandomizer(scount int) []cd.Card {
+func initializeRandomizer(scount int, cnf Config) []cd.Card {
 
-	rd := bs.AvailableCards()
+	// rd := bs.AvailableCards()
 
-	/*
-		var rd []cd.Card
-		rd = append(rd, bs.DefCellar())
-		rd = append(rd, bs.DefChapel())
-		rd = append(rd, bs.DefMoat())
-		rd = append(rd, bs.DefHarbinger())
-		rd = append(rd, bs.DefVillage())
-		rd = append(rd, bs.DefWorkshop())
-		rd = append(rd, bs.DefWoodcutter())
-		rd = append(rd, bs.DefVassal())
-		rd = append(rd, bs.DefBureaucrat())
-		rd = append(rd, bs.DefRemodel())
-		rd = append(rd, bs.DefMoneylender())
-		rd = append(rd, bs.DefMilitia())
-		rd = append(rd, bs.DefGardens())
-		rd = append(rd, bs.DefSmithy())
-		rd = append(rd, bs.DefThroneRoom())
-		rd = append(rd, bs.DefCouncilRoom())
-		rd = append(rd, bs.DefMine())
-		rd = append(rd, bs.DefFestival())
-		rd = append(rd, bs.DefLaboratory())
-		rd = append(rd, bs.DefMarket())
-		rd = append(rd, bs.DefWitch())
-		rd = append(rd, bs.DefArtisan())
-	*/
-
-	rd = ShuffleCards(rd)
-	fmt.Println("randomizer", showQuick(rd))
+	rd := ShuffleCards(bs.AvailableCards())
+	// fmt.Fprintln(cnf.Buffer, "randomizer", showQuick(rd))
 	if scount < len(rd) {
 		rd = rd[:scount]
 	}
-	fmt.Println("randomized", showQuick(rd))
+	fmt.Fprintln(cnf.Buffer, "Random supply:", showQuick(rd))
 	return rd
 
 }
@@ -1186,26 +890,12 @@ func ValidateCards(cds []string) bool {
 	}
 
 	for _, cn := range cds {
-		// fmt.Println("name:", cn)
 		mc := GetCard(cn)
 		if mc.Name == "" {
 			fmt.Println("Unknown Dominion card:", cn)
 			return false
 		}
 
-		/*
-		   matched := false
-		   for _, ac := range bs.AvailableCards() {
-		       if cd == ac.Name {
-		           matched = true
-		       }
-		   }
-
-		   if matched == false {
-		       fmt.Println("Unknown Dominion card:", cd)
-		       return false
-		   }
-		*/
 	}
 	return true
 }
