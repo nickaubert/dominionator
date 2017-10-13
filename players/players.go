@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"math/rand"
+	"sort"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type Player struct {
 	Hand    Cards
 	InPlay  Cards
 	Discard Cards
+	Score   int
 	Name    string
 }
 
@@ -148,17 +150,18 @@ func CleanupPhase(pg *Playgroup, cnf Config) {
 	p.InPlay.Cards = p.InPlay.Cards[:0]
 	p.Discard.Cards = append(p.Discard.Cards, p.Hand.Cards...)
 	p.Hand.Cards = p.Hand.Cards[:0]
-	nc := Draw(p, 5)
+	nc := Draw(p, 5, cnf)
 	if len(nc) > 0 {
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 }
 
-func Draw(p *Player, d int) []cd.Card {
+func Draw(p *Player, d int, cnf Config) []cd.Card {
 	var nc []cd.Card
 	if len(p.Deck.Cards) == 0 {
 		if len(p.Discard.Cards) == 0 {
-			fmt.Println("WARNING: Not enough cards in deck to draw!")
+			fmt.Fprintln(cnf.Buffer, "WARNING: Not enough cards in deck to draw!")
+			// fmt.Println("WARNING: Not enough cards in deck to draw!")
 			return nc
 		}
 	}
@@ -169,7 +172,8 @@ func Draw(p *Player, d int) []cd.Card {
 			ShuffleDeck(p)
 		}
 		if len(p.Deck.Cards) == 0 {
-			fmt.Println("Out of cards!")
+			fmt.Fprintln(cnf.Buffer, "Out of cards!")
+			// fmt.Println("Out of cards!")
 			break
 		}
 		c, z := p.Deck.Cards[0], p.Deck.Cards[1:]
@@ -257,13 +261,22 @@ func CheckEnd(s cd.Supply) bool {
 }
 
 func CheckScores(pg Playgroup) {
-	for _, p := range pg.Players {
+	fmt.Println("endgame")
+	for i, p := range pg.Players {
 		p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
 		p.Deck.Cards = append(p.Deck.Cards, p.Discard.Cards...)
 		p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
-
-		vp := countVictoryPoints(p.Deck.Cards)
-		fmt.Println(p.Name, vp, "points")
+		pg.Players[i].Deck = p.Deck
+		pg.Players[i].Score = countVictoryPoints(p.Deck.Cards)
+	}
+	sort.Sort(ByScore(pg.Players))
+	for i, p := range pg.Players {
+		acv := avgCardVal(p.Deck.Cards)
+		dsize := len(p.Deck.Cards)
+		victoryCards := findCardType(p.Deck.Cards, "victory")
+		vcount := len(victoryCards)
+		avv := avgCardVal(victoryCards)
+		fmt.Println(i, p.Name, p.Score, dsize, acv, vcount, avv)
 	}
 }
 
@@ -276,6 +289,19 @@ func countVictoryPoints(d []cd.Card) int {
 		}
 	}
 	return vp
+}
+
+func avgCardVal(d []cd.Card) float32 {
+	sum := 0
+	for _, c := range d {
+		sum += c.Cost
+	}
+	dsize := len(d)
+	var avg float32
+	if dsize == 0 {
+		return avg
+	}
+	return (float32(sum) / float32(dsize))
 }
 
 // replace with ShuffleCards ?
@@ -427,7 +453,7 @@ func resolveEffects(pg *Playgroup, c cd.Card, cnf Config) {
 	pg.ThisTurn.Buys += c.Effects.ExtraBuys
 	pg.ThisTurn.Coins += c.Effects.ExtraCoins
 	if c.Effects.DrawCard > 0 {
-		nc := Draw(p, c.Effects.DrawCard)
+		nc := Draw(p, c.Effects.DrawCard, cnf)
 		if len(nc) > 0 {
 			p.Hand.Cards = append(p.Hand.Cards, nc...)
 		}
@@ -501,7 +527,7 @@ Sequence:
 			drawMax := seq.Seq[1]
 			drewCards := seq.Seq[2]
 			fmt.Fprintln(cnf.Buffer, "\t\t\t drawDeck", drawMax, drewCards, seqVal[drawMax])
-			nc := Draw(p, seqVal[drawMax])
+			nc := Draw(p, seqVal[drawMax], cnf)
 			if len(nc) > 0 {
 				seqCards[drewCards] = nc
 			}
@@ -908,3 +934,10 @@ func GetCard(name string) cd.Card {
 	}
 	return cd.Card{} // empty card
 }
+
+// sorting by score
+type ByScore []Player
+
+func (p ByScore) Len() int           { return len(p) }
+func (p ByScore) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p ByScore) Less(i, j int) bool { return p[i].Score > p[j].Score }

@@ -76,7 +76,7 @@ func playDominion(cnf pl.Config) pl.Playgroup {
 	for n := range pg.Players {
 		p := &pg.Players[n]
 		pl.ShuffleDeck(p)
-		nc := pl.Draw(p, 5)
+		nc := pl.Draw(p, 5, cnf)
 		p.Hand.Cards = append(p.Hand.Cards, nc...)
 	}
 
