@@ -7,6 +7,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,7 +18,10 @@ import yaml "gopkg.in/yaml.v2"
 
 func main() {
 
-	cnf := checkConfig("dom.yaml")
+	confFile := flag.String("c", "dom.yaml", "config.yaml")
+	flag.Parse()
+
+	cnf := checkConfig(*confFile)
 	defer cnf.Buffer.Flush()
 
 	fmt.Println("Dominion!")
