@@ -126,7 +126,7 @@ func BuyPhase(pg *Playgroup, cnf Config) {
 		}
 
 		fmt.Fprintln(cnf.Buffer, "\t\t", pg.ThisTurn.Coins, "coins to spend")
-		c := SelectCardBuy(pg.ThisTurn.Coins, "any", pg.Supply)
+		c := SelectCardBuy(*p, pg.ThisTurn.Coins, "any", pg.Supply)
 		if c.Name == "" {
 			break
 		}
@@ -186,7 +186,20 @@ func Draw(p *Player, d int, cnf Config) []cd.Card {
 	return nc
 }
 
-func SelectCardBuy(o int, t string, s cd.Supply) cd.Card {
+func SelectCardBuy(p Player, o int, t string, s cd.Supply) cd.Card {
+
+	// not implementing this
+	/*
+	   if t == "any" {
+	       fd := fullDeck(p)
+	       treasureCards := findCardType(fd, "treasure")
+	       treasurePct := ( float32(len(treasureCards)) / float32(len(fd)) )
+	       if ( treasurePct < .35 ) {
+	           t = "treasure"
+	       }
+	   }
+	*/
+
 	// decision point here
 	// this is not the best heuristic
 	var highestCost int
@@ -263,10 +276,10 @@ func CheckEnd(s cd.Supply) bool {
 func CheckScores(pg Playgroup) {
 	fmt.Println("endgame")
 	for i, p := range pg.Players {
-		p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
-		p.Deck.Cards = append(p.Deck.Cards, p.Discard.Cards...)
-		p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
-		pg.Players[i].Deck = p.Deck
+		// p.Deck.Cards = append(p.Deck.Cards, p.Hand.Cards...)
+		// p.Deck.Cards = append(p.Deck.Cards, p.Discard.Cards...)
+		// p.Deck.Cards = append(p.Deck.Cards, p.InPlay.Cards...)
+		pg.Players[i].Deck.Cards = fullDeck(p)
 		pg.Players[i].Score = countVictoryPoints(p.Deck.Cards)
 	}
 	sort.Sort(ByScore(pg.Players))
@@ -276,7 +289,11 @@ func CheckScores(pg Playgroup) {
 		victoryCards := findCardType(p.Deck.Cards, "victory")
 		vcount := len(victoryCards)
 		avv := avgCardVal(victoryCards)
-		fmt.Println(i, p.Name, p.Score, dsize, acv, vcount, avv)
+		actionCards := findCardType(p.Deck.Cards, "action")
+		actionPct := (float32(len(actionCards)) / float32(dsize))
+		treasureCards := findCardType(p.Deck.Cards, "treasure")
+		treasurePct := (float32(len(treasureCards)) / float32(dsize))
+		fmt.Println(i, p.Name, p.Score, dsize, acv, vcount, avv, actionPct, treasurePct)
 	}
 }
 
@@ -556,7 +573,7 @@ Sequence:
 			newCard := seq.Seq[2]
 			maxVal := seqVal[seq.Seq[3]]
 			fmt.Fprintln(cnf.Buffer, "\t\t\t GainCardType", cardType, newCard, maxVal)
-			c := SelectCardBuy(maxVal, cardType, pg.Supply)
+			c := SelectCardBuy(*p, maxVal, cardType, pg.Supply)
 			if c.Name == "" {
 				fmt.Fprintln(cnf.Buffer, "\t\t\t nothing to gain!")
 				continue
@@ -841,6 +858,14 @@ func validateCards(cs []cd.Card, pname, cardset string) {
 			fmt.Println("ERROR: empty card! %s %s", pname, cardset)
 		}
 	}
+}
+
+func fullDeck(p Player) []cd.Card {
+	fd := p.Deck.Cards
+	fd = append(p.Deck.Cards, p.Hand.Cards...)
+	fd = append(p.Deck.Cards, p.Discard.Cards...)
+	fd = append(p.Deck.Cards, p.InPlay.Cards...)
+	return fd
 }
 
 func InitializeSupply(cnf Config) cd.Supply {

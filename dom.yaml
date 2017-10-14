@@ -1,14 +1,15 @@
 players : 4
-logfile : /dev/shm/gamelog.out
+logfile : 
+# logfile : /dev/shm/gamelog.out
 kingdom:
-#       - random
-     - Gardens
-     - Mine
-     - Vassal
-     - Smithy
-     - Village
-     - Bureaucrat
-     - Moneylender
-     - Witch
-     - Laboratory
-     - ThroneRoom
+     - random
+#     - Gardens
+#     - Mine
+#     - Vassal
+#     - Smithy
+#     - Village
+#     - Bureaucrat
+#     - Moneylender
+#     - Witch
+#     - Laboratory
+#     - ThroneRoom
